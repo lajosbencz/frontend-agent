@@ -45,11 +45,21 @@ const demos = [
           </h1>
           <p class="mt-4 max-w-[420px] text-[13px] leading-[1.5] text-[var(--hub-muted)]">
             A tiny language model running entirely in your browser, driving various UIs with tools.
-            <br/>
-            <NuxtLink
-              to="/about"
-              class="mt-1 inline-block text-[12px] text-[var(--hub-muted)] no-underline hover:text-[var(--hub-accent)]"
-            >How this works →</NuxtLink>
+            <ul class="pt-3">
+              <li>
+                <NuxtLink
+                  to="/about"
+                  class="mt-1 inline-block text-[12px] text-[var(--hub-muted)] no-underline hover:text-[var(--hub-accent)]"
+                >→ How this works</NuxtLink>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/lajosbencz/frontend-agent"
+                  target="_blank"
+                  class="mt-1 inline-block text-[12px] text-[var(--hub-muted)] no-underline hover:text-[var(--hub-accent)]"
+                >→ Github Source</a>
+              </li>
+            </ul>
           </p>
         </div>
 
