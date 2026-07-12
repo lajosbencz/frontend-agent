@@ -15,11 +15,11 @@ what it is given. Swap the site, swap the injected context - the same model work
 
 ```
 frontend-agent/                     npm workspaces root
-├─ packages/frontend-agent/  @lajosbencz/frontend-agent - the TS client library that drives the model
+├─ packages/frontend-agent/  frontend-agent - the TS client library that drives the model
 └─ demo/                     Nuxt demo: three storefronts (BrewCraft/Emporium/Vendor) consuming it
 ```
 
-**Client library** - [`@lajosbencz/frontend-agent`](packages/frontend-agent) is a fully-typed,
+**Client library** - [`frontend-agent`](packages/frontend-agent) is a fully-typed,
 framework-agnostic TypeScript package for driving the model in any web app: `createAgent(...)` returns
 a session with a single `submit(text)` feed point, tool-calling + GBNF id-grounding, a configurable
 Hugging Face model source, and optional RAG adapters.
@@ -40,7 +40,7 @@ assistant. See [`demo/README.md`](demo/README.md).
 
 ```bash
 npm install
-npm run build -w @lajosbencz/frontend-agent
+npm run build -w frontend-agent
 npm run dev -w demo        # http://localhost:3000
 ```
 
@@ -53,3 +53,9 @@ activation - no server-side inference.
 - **Model weights** - a derivative of `LiquidAI/LFM2.5-230M`, so they inherit the **LFM Open License
   v1.0** (permissive, with a commercial-revenue cap; attribution to LiquidAI required). Cannot be
   relicensed.
+
+## Authoring
+
+This repository was substantially authored with the following models, under human direction and review:
+- Qwen3 Coder 30B A3B Q4_K_M (local Ollama)
+- Claude Opus 4.8 (Anthropic)
