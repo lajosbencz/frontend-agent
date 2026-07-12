@@ -1,0 +1,124 @@
+[
+  {
+    "id": 2,
+    "name": "Blinker Fluid",
+    "description": "Synthetic formula engineered for crisper, brighter, more rhythmic turn signals. Universal fit.",
+    "price": 24.95,
+    "category": "Automotive & Sorcery"
+  },
+  {
+    "id": 3,
+    "name": "Left-Handed Screwdriver",
+    "description": "Ergonomically counter-threaded for lefties. Will absolutely spin righties into a state of confusion.",
+    "price": 34.99,
+    "category": "Tools & Hardware"
+  },
+  {
+    "id": 4,
+    "name": "Inflatable Dartboard",
+    "description": "Space-saving design. Includes a patch kit because you are definitely going to need it.",
+    "price": 14.99,
+    "category": "Leisure & Games"
+  },
+  {
+    "id": 5,
+    "name": "Muffler Bearings (Pack of 4)",
+    "description": "Eliminates that pesky exhaust wobble. Pre-greased with premium snake oil.",
+    "price": 45.0,
+    "category": "Automotive & Sorcery"
+  },
+  {
+    "id": 7,
+    "name": "Replacement Cloud Storage (Physical Bucket)",
+    "description": "A literal galvanized steel bucket optimized for catching data leaks and overhead Wi-Fi drift.",
+    "price": 29.99,
+    "category": "Tech Accessories"
+  },
+  {
+    "id": 8,
+    "name": "Solar-Powered Flashlight",
+    "description": "Eco-friendly illumination. Only works when exposed to direct, blinding sunlight.",
+    "price": 12.5,
+    "category": "Tools & Hardware"
+  },
+  {
+    "id": 9,
+    "name": "Wireless USB Cable",
+    "description": "Gluten-free, Zero carbs, 100% data fidelity. Perfect for tech-savvy diets. Type-C to Type-Wheat.",
+    "price": 29.99,
+    "category": "Tech Accessories"
+  },
+  {
+    "id": 10,
+    "name": "Organic Password Generator",
+    "description": "Hand-raised, artisanal characters harvested only when fully mature. No artificial algorithms used.",
+    "price": 8.0,
+    "category": "Software & Digital Goods",
+    "inStock": false
+  },
+  {
+    "id": 11,
+    "name": "Diet Water",
+    "description": "All the hydration of regular water, but with 50% less heavy hydrogen. Zero wetness.",
+    "price": 5.99,
+    "category": "Groceries & Hexes"
+  },
+  {
+    "id": 13,
+    "name": "Bluetooth-pick",
+    "description": "Tracks dental plaque metrics in real-time. Over-the-air splinter updates included.",
+    "price": 79.95,
+    "category": "Health & Wellness",
+    "inStock": false
+  },
+  {
+    "id": 14,
+    "name": "Ice Cubes",
+    "description": "Package only includes cubes. Water and cold to be added!",
+    "price": 15.0,
+    "category": "Groceries & Hexes"
+  },
+  {
+    "id": 15,
+    "name": "Elbow Grease",
+    "description": "Hard work in a can. Spray liberally onto projects to bypass actual physical effort.",
+    "price": 18.25,
+    "category": "Automotive & Sorcery"
+  },
+  {
+    "id": 18,
+    "name": "Smart Wallet",
+    "description": "Features smart-leak technology that automatically dispenses your cash to local vendors via proximity sensors.",
+    "price": 89.99,
+    "category": "Apparel & Mistakes"
+  },
+  {
+    "id": 19,
+    "name": "Waterproof Towel",
+    "description": "Hydrophobic nano-coating ensures this towel stays bone dry, no matter how wet you are.",
+    "price": 19.95,
+    "category": "Home & Bath"
+  },
+  {
+    "id": 21,
+    "name": "Pre-Tangled Headphones",
+    "description": "Save 15 minutes of your life. Comes fresh out of the box in a mathematically impossible nautical knot.",
+    "price": 11.11,
+    "category": "Tech Accessories"
+  },
+  {
+    "id": 24,
+    "name": "Bespoke Static Electricity (10-Pack)",
+    "description": "Artisanal, small-batch shocks captured via high-pile shag carpets. Quality may vary.",
+    "price": 14.99,
+    "category": "Automotive & Sorcery"
+  },
+  {
+    "id": 26,
+    "name": "Air Guitar Strings",
+    "description": "Ultra-low gauge, 100% transparent nylon. Guaranteed never to snap, rust, or exist.",
+    "price": 9.99,
+    "category": "Leisure & Games",
+    "inStock": false
+  }
+]

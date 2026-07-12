@@ -1,0 +1,50 @@
+name: Deploy demo to GitHub Pages
+
+# Builds the static demo (library -> demo `nuxt generate`) and deploys it to GitHub Pages.
+# Model + dataset publishing to Hugging Face is a manual, local step - it needs write tokens and
+# is deliberately kept out of CI.
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/configure-pages@v5
+      - run: npm ci
+      # Build the library first - the demo consumes its dist.
+      - run: npm run build -w @lajosbencz/frontend-agent
+      # Project Pages serve under /<repo>/; for a user/org root site set this to '/'.
+      - run: npm run generate -w demo
+        env:
+          NUXT_APP_BASE_URL: /${{ github.event.repository.name }}/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: demo/.output/public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

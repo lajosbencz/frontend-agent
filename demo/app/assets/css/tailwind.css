@@ -1,0 +1,189 @@
+/* Design tokens - distilled from the design-canvas styleguide. Self-hosted fonts (COEP-safe),
+   warm editorial palette. Mapped into Tailwind's utility scale below via @theme inline, so the
+   CSS custom properties stay the single source of truth (and the runtime per-domain theme swap
+   via [data-theme='dark'] keeps working exactly as before - pure CSS, no JS). */
+@import "tailwindcss";
+
+/* ---- fonts (self-hosted, latin) ---- */
+@font-face { font-family: 'Space Grotesk'; font-weight: 500; font-display: swap;
+  src: url('/fonts/spacegrotesk-500.woff2') format('woff2'); }
+@font-face { font-family: 'Space Grotesk'; font-weight: 600; font-display: swap;
+  src: url('/fonts/spacegrotesk-600.woff2') format('woff2'); }
+@font-face { font-family: 'Space Grotesk'; font-weight: 700; font-display: swap;
+  src: url('/fonts/spacegrotesk-700.woff2') format('woff2'); }
+@font-face { font-family: 'Hanken Grotesk'; font-weight: 400; font-display: swap;
+  src: url('/fonts/hankengrotesk-400.woff2') format('woff2'); }
+@font-face { font-family: 'Hanken Grotesk'; font-weight: 500; font-display: swap;
+  src: url('/fonts/hankengrotesk-500.woff2') format('woff2'); }
+@font-face { font-family: 'Hanken Grotesk'; font-weight: 600; font-display: swap;
+  src: url('/fonts/hankengrotesk-600.woff2') format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-weight: 400; font-display: swap;
+  src: url('/fonts/jetbrainsmono-400.woff2') format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-weight: 500; font-display: swap;
+  src: url('/fonts/jetbrainsmono-500.woff2') format('woff2'); }
+
+/* ---- tokens ---- */
+:root {
+  --bg: #faf9f7;
+  --surface: #ffffff;
+  --surface-2: #f6f4f0;
+  --surface-3: #f3f1ed;
+  --surface-4: #efece6;
+  --border: #e6e2db;
+  --border-2: #e9e5de;
+  --border-hover: #d3ccc0;
+  --text: #211d18;
+  --text-strong: #1b1712;
+  --text-2: #4a443c;
+  --text-muted: #6b645b;
+  --text-subtle: #8a8277;
+  --text-faint: #a89f93;
+  --accent: #c05e3a;
+  --accent-hover: #a54e2f;
+  --accent-tint: #f6e9e2;
+  --accent-tint-border: #f0d9cd;
+  --accent-soft: #e8a583;
+  --success: #3f8f5b;
+  --success-bg: #eef6f0;
+  --error: #b00020;
+  --error-bg: #fdecea;
+  --dark: #211d18;
+
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Hanken Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --r-sm: 8px;
+  --r: 10px;
+  --r-lg: 14px;
+  --r-xl: 18px;
+  --r-pill: 999px;
+  --nav-h: 56px;
+  --dock-w: 400px;
+  --shadow-card: 0 8px 24px -12px rgba(30, 20, 12, 0.18);
+  --shadow-float: 0 20px 50px -24px rgba(30, 20, 12, 0.22);
+  --shadow-modal: 0 30px 80px -20px rgba(20, 14, 8, 0.5);
+  --maxw: 1180px;
+  --photo-a: #f2efe9;
+  --photo-b: #ece8e0;
+}
+
+/* Emporium's dark theme - a moody curiosity-shop palette (near-black violet, warm gold accent),
+   not a simple inversion of BrewCraft's warm-cream one. Scoped to the layout root
+   ([data-theme="dark"]), so BrewCraft/Vendor keep the light palette untouched. Static per-domain
+   branding, not a user-toggled "mode" - set once via a plain HTML attribute, no JS theme-switcher
+   involved. (v2: replaced the original green-black neutrals, which read muddy against the gold
+   accent, with a true violet-black scale for a cleaner jewel-box contrast.) */
+[data-theme='dark'] {
+  --bg: #0e0b14;
+  --surface: #171220;
+  --surface-2: #1e1829;
+  --surface-3: #251f33;
+  --surface-4: #2c253d;
+  --border: #362e4a;
+  --border-2: #3f3654;
+  --border-hover: #574a72;
+  --text: #f2eef9;
+  --text-strong: #ffffff;
+  --text-2: #cec7de;
+  --text-muted: #a89fc0;
+  --text-subtle: #8a7fa3;
+  --text-faint: #665c80;
+  --accent: #e0a63a;
+  --accent-hover: #f0bd5a;
+  --accent-tint: #2c2415;
+  --accent-tint-border: #453a1f;
+  --accent-soft: #d4a768;
+  --success: #5fd9a0;
+  --success-bg: #132a20;
+  --error: #ff7a86;
+  --error-bg: #331420;
+  --dark: #7a4f26;
+  --shadow-card: 0 8px 24px -10px rgba(0, 0, 0, 0.55);
+  --shadow-float: 0 20px 50px -20px rgba(0, 0, 0, 0.6);
+  --shadow-modal: 0 30px 80px -16px rgba(0, 0, 0, 0.75);
+  --photo-a: #1e1829;
+  --photo-b: #251f33;
+}
+
+/* ---- map tokens into Tailwind's utility namespace ---- */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-surface-4: var(--surface-4);
+  --color-border: var(--border);
+  --color-border-2: var(--border-2);
+  --color-border-hover: var(--border-hover);
+  --color-text: var(--text);
+  --color-text-strong: var(--text-strong);
+  --color-text-2: var(--text-2);
+  --color-text-muted: var(--text-muted);
+  --color-text-subtle: var(--text-subtle);
+  --color-text-faint: var(--text-faint);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-tint: var(--accent-tint);
+  --color-accent-tint-border: var(--accent-tint-border);
+  --color-accent-soft: var(--accent-soft);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-error: var(--error);
+  --color-error-bg: var(--error-bg);
+  --color-dark: var(--dark);
+  --color-photo-a: var(--photo-a);
+  --color-photo-b: var(--photo-b);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --radius-pill: var(--r-pill);
+
+  --shadow-card: var(--shadow-card);
+  --shadow-float: var(--shadow-float);
+  --shadow-modal: var(--shadow-modal);
+}
+
+/* ---- base ---- */
+/* Layered explicitly: unlayered CSS always beats Tailwind's utility layer regardless of
+   specificity, which would make these un-overridable by any utility class. @layer base sits
+   below @layer utilities in Tailwind's cascade, so a plain class on an element still wins. */
+@layer base {
+  html { -webkit-font-smoothing: antialiased; text-size-adjust: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  a { color: var(--accent); }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4 { font-family: var(--font-display); color: var(--text); margin: 0; }
+  h1 { font-weight: 700; letter-spacing: -0.03em; line-height: 1.05; }
+  h2 { font-weight: 600; letter-spacing: -0.02em; }
+  h3 { font-weight: 600; letter-spacing: -0.01em; }
+}
+
+/* Container: appears on nearly every page; the clamp()-based padding has no native Tailwind
+   utility, so this stays a single hand-written class rather than an inlined arbitrary value. */
+@layer components {
+  .wrap { max-width: var(--maxw); margin-inline: auto; padding-inline: clamp(1rem, 4vw, 24px); }
+}
+
+@layer utilities {
+  @keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .animate-fade-in { animation: fade-in 0.3s ease; }
+
+  @keyframes mic-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); }
+    50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 0%, transparent); }
+  }
+  .animate-mic-pulse { animation: mic-pulse 1.2s ease-in-out infinite; }
+}

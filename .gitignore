@@ -1,0 +1,38 @@
+# --- secrets ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+deploy/tls/
+
+# --- python ---
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.venv/
+
+# --- node ---
+node_modules/
+*.log
+
+# --- large model artifacts ---
+training/artifacts/
+training/vendor/*
+!training/vendor/README.md
+*.gguf
+*.safetensors
+demo/public/models/*.gguf
+
+# --- generated data ---
+training/data/
+
+# --- misc ---
+.DS_Store
+.idea
+.code
+.fleet
+.claude

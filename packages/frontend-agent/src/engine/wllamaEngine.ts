@@ -1,0 +1,202 @@
+import { Wllama, type AssetsPathConfig } from '@wllama/wllama'
+import { parseToolCalls } from '../parsing/toolCallParser'
+import { renderToolCalls } from '../parsing/renderToolCalls'
+import { N_CTX, MAX_OUTPUT_TOKENS, SYSTEM_CTX_WARN_FRACTION, estimateTokens } from '../limits'
+import type { AgentEngine, ChatMessage, EngineGenerateResult } from './types'
+
+/** Reference to a GGUF published on the Hugging Face Hub. */
+export interface HFModelRef {
+  /** `owner/name`. Default `lazos/lfm2.5-230m-frontend-agent`. */
+  repo?: string
+  /** Release/version tag embedded in the filename. Default `v1.0.0`. */
+  version?: string
+  /** Quantization suffix. Default `Q4_K_M`. */
+  quant?: string
+}
+
+export type EngineStatus = 'idle' | 'downloading' | 'loading' | 'ready'
+
+export interface WllamaEngineConfig {
+  /** Load the GGUF from Hugging Face (default). Ignored if `modelUrl` is set. */
+  model?: HFModelRef
+  /** Full GGUF URL - self-host escape hatch; overrides `model`. */
+  modelUrl?: string
+  /** wllama WASM asset config, e.g. `{ 'single-thread/wllama.wasm': url, 'multi-thread/wllama.wasm': url }`. */
+  wllamaAssets: AssetsPathConfig
+  /** Context window. Default 8192. */
+  nCtx?: number
+  /** Max tokens per assistant turn. Default 320. */
+  maxTokens?: number
+  /** Backend preference. `'auto'` uses WebGPU when a real adapter is present. Default `'auto'`. */
+  backend?: 'auto' | 'webgpu' | 'cpu'
+  onStatus?: (status: EngineStatus) => void
+  onProgress?: (progress: { loaded: number; total: number }) => void
+  /** Reports whether a usable WebGPU adapter was detected (after load). */
+  onBackend?: (info: { webgpu: boolean; using: 'webgpu' | 'cpu' }) => void
+}
+
+const DEFAULT_MODEL: Required<HFModelRef> = {
+  repo: 'lazos/lfm2.5-230m-frontend-agent',
+  version: 'v1.0.0',
+  // Q6_K is the quality sweet spot for this 230M model: it matches Q8 on held-out eval (96.3%) while
+  // Q4_K_M drops ~2 pts (worse query formulation / grounding). ~191 MB.
+  quant: 'Q6_K',
+}
+
+/** Resolve a HF model ref to its `resolve/main` GGUF URL: `{basename}-{version}-{quant}.gguf`. */
+export function resolveModelUrl(ref: HFModelRef = {}): string {
+  const { repo, version, quant } = { ...DEFAULT_MODEL, ...ref }
+  const basename = repo.split('/').pop() ?? repo
+  return `https://huggingface.co/${repo}/resolve/main/${basename}-${version}-${quant}.gguf`
+}
+
+async function detectWebGPU(): Promise<boolean> {
+  try {
+    const gpu = (navigator as unknown as { gpu?: { requestAdapter?: () => Promise<unknown> } }).gpu
+    if (!gpu?.requestAdapter) return false
+    return (await gpu.requestAdapter()) != null
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Real engine: runs the GGUF in-browser via wllama (llama.cpp WASM/WebGPU). Loads the model from
+ * Hugging Face by default (configurable), caches it in OPFS, and applies the GBNF grammar at decode.
+ * Framework-agnostic - reports lifecycle via callbacks, no store coupling.
+ */
+export class WllamaEngine implements AgentEngine {
+  private wllamaPromise: Promise<Wllama> | null = null
+  private warnedSystemSize = false
+  private readonly url: string
+  private readonly nCtx: number
+  private readonly maxTokens: number
+
+  constructor(private readonly config: WllamaEngineConfig) {
+    this.url = config.modelUrl ?? resolveModelUrl(config.model)
+    this.nCtx = config.nCtx ?? N_CTX
+    this.maxTokens = config.maxTokens ?? MAX_OUTPUT_TOKENS
+  }
+
+  async load(): Promise<void> {
+    await this.getWllama()
+  }
+
+  /** Tear down the loaded model so it can be reloaded (e.g. on a backend switch). OPFS-cached. */
+  async reset(): Promise<void> {
+    const p = this.wllamaPromise
+    this.wllamaPromise = null
+    try {
+      const inst = p ? await p : null
+      await (inst as unknown as { exit?: () => Promise<void> })?.exit?.()
+    } catch {
+      /* ignore teardown errors */
+    }
+  }
+
+  private getWllama(): Promise<Wllama> {
+    if (this.wllamaPromise) return this.wllamaPromise
+    this.wllamaPromise = (async () => {
+      const { onStatus, onProgress, onBackend, backend = 'auto', wllamaAssets } = this.config
+      const hasWebGPU = await detectWebGPU()
+      const useGPU = hasWebGPU && backend !== 'cpu'
+      onBackend?.({ webgpu: hasWebGPU, using: useGPU ? 'webgpu' : 'cpu' })
+
+      const load = async (nThreads?: number): Promise<Wllama> => {
+        const instance = new Wllama(wllamaAssets)
+        onStatus?.('downloading')
+        // wllama has no separate hook for "download done, now initializing" - the progress
+        // callback stalling at 100% while loadModelFromUrl hasn't resolved yet IS that gap, so
+        // infer the transition from it (once) rather than leaving the caller stuck on a stale
+        // "downloading 100%" label through however long GGUF parsing/context init takes.
+        let announcedLoading = false
+        await instance.loadModelFromUrl(this.url, {
+          n_ctx: this.nCtx,
+          n_gpu_layers: useGPU ? 99999 : 0,
+          ...(nThreads ? { n_threads: nThreads } : {}),
+          progressCallback: ({ loaded, total }) => {
+            onProgress?.({ loaded, total })
+            if (!announcedLoading && total > 0 && loaded >= total) {
+              announcedLoading = true
+              onStatus?.('loading')
+            }
+          },
+        })
+        return instance
+      }
+
+      // Try the fast path (auto = WebGPU / multi-thread WASM); on a threads-build trap, fall back
+      // once to single-thread. Reacts to the actual failure, not a UA string. OPFS-cached, so the
+      // retry never re-downloads.
+      let instance: Wllama
+      try {
+        instance = await load()
+      } catch (err) {
+        console.warn('[frontend-agent] multi-thread load failed; retrying single-thread:', err)
+        instance = await load(1)
+      }
+      onStatus?.('ready')
+      return instance
+    })()
+    return this.wllamaPromise
+  }
+
+  async generate(messages: ChatMessage[], grammar?: string): Promise<EngineGenerateResult> {
+    const wllama = await this.getWllama()
+
+    if (!this.warnedSystemSize) {
+      const sys = messages.find((m) => m.role === 'system')?.content ?? ''
+      const tokenize = (wllama as { tokenize?: (s: string) => Promise<number[]> }).tokenize
+      let sysTokens: number
+      try {
+        sysTokens = tokenize ? (await tokenize.call(wllama, sys)).length : estimateTokens(sys)
+      } catch {
+        sysTokens = estimateTokens(sys)
+      }
+      if (sysTokens > this.nCtx * SYSTEM_CTX_WARN_FRACTION) {
+        this.warnedSystemSize = true
+        console.warn(
+          `[frontend-agent] system prompt is ${sysTokens} tokens - over ` +
+            `${Math.round(SYSTEM_CTX_WARN_FRACTION * 100)}% of the ${this.nCtx}-token context. ` +
+            'A larger catalog/KB is crowding out the conversation; trim the injected catalog or raise nCtx.',
+        )
+      }
+    }
+
+    // Full system text (persona + catalog + "List of tools: [...]") is baked into the system message,
+    // so we pass NO `tools` - wllama's chat template renders turns/markers. The GBNF grammar (when
+    // supplied) guarantees a structurally-valid call + id-grounding at decode time.
+    const response = await wllama.createChatCompletion({
+      messages: messages as never,
+      max_tokens: this.maxTokens,
+      temperature: 0,
+      ...(grammar ? { grammar } : {}),
+    } as never)
+    const message = (response as { choices: { message: WllamaMessage }[] }).choices[0]!.message
+
+    if (message.tool_calls && message.tool_calls.length > 0) {
+      const toolCalls = message.tool_calls.map((c) => ({
+        name: c.function.name,
+        args: safeJson(c.function.arguments),
+      }))
+      return { text: message.content ?? '', toolCalls, raw: renderToolCalls(toolCalls) }
+    }
+
+    const rawContent = message.content ?? ''
+    const parsed = parseToolCalls(rawContent)
+    return { text: parsed.text, toolCalls: parsed.toolCalls, raw: rawContent }
+  }
+}
+
+interface WllamaMessage {
+  content?: string
+  tool_calls?: { function: { name: string; arguments: string } }[]
+}
+
+function safeJson(s: string): Record<string, unknown> {
+  try {
+    return JSON.parse(s || '{}')
+  } catch {
+    return {}
+  }
+}

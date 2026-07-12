@@ -1,0 +1,32 @@
+{
+  "name": "frontend-agent-demo",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "rag:index": "node scripts/build-rag-index.mjs",
+    "build": "npm run rag:index && nuxt build",
+    "dev": "npm run rag:index && nuxt dev",
+    "generate": "npm run rag:index && nuxt generate",
+    "preview": "nuxt preview"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^4.2.0",
+    "@lajosbencz/frontend-agent": "*",
+    "@nuxt/content": "^3.14.0",
+    "@pinia/nuxt": "^0.11.3",
+    "@wllama/wllama": "^3.5.1",
+    "better-sqlite3": "^12.11.1",
+    "minisearch": "^7.2.0",
+    "nuxt": "^4.4.8",
+    "pinia": "^3.0.4",
+    "stemmer": "^2.0.1",
+    "vue": "^3.5.35",
+    "vue-router": "^5.1.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.2",
+    "gray-matter": "^4.0.3",
+    "tailwindcss": "^4.3.2"
+  }
+}

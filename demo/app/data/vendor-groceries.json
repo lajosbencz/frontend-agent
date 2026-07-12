@@ -1,0 +1,18 @@
+[
+  { "id": "apples", "title": "Apples", "price": 3.49, "description": "Crisp, red, a bit tart. Bagged by the pound.", "emoji": "🍎", "shelf": 1 },
+  { "id": "bread", "title": "Sourdough Loaf", "price": 4.25, "description": "Baked this morning — still warm if you're quick.", "emoji": "🍞", "shelf": 1 },
+  { "id": "bananas", "title": "Bananas", "price": 1.6, "description": "Sweet and ready today, not tomorrow.", "emoji": "🍌", "shelf": 1 },
+  { "id": "oranges", "title": "Oranges", "price": 2.75, "description": "Thin-skinned and juicy, straight off the crate.", "emoji": "🍊", "shelf": 1 },
+  { "id": "milk", "title": "Whole Milk", "price": 2.1, "description": "One litre, from the dairy two towns over.", "emoji": "🥛", "shelf": 2 },
+  { "id": "eggs", "title": "Eggs", "price": 3.8, "description": "Free-range, a dozen, brown shells.", "emoji": "🥚", "shelf": 2 },
+  { "id": "cheese", "title": "Aged Cheddar", "price": 6.75, "description": "Sharp and nutty. Cut to order.", "emoji": "🧀", "shelf": 2 },
+  { "id": "butter", "title": "Salted Butter", "price": 4.5, "description": "Churned in small batches, wrapped in paper.", "emoji": "🧈", "shelf": 2 },
+  { "id": "tomatoes", "title": "Vine Tomatoes", "price": 2.95, "description": "Still on the vine, ripe and sweet.", "emoji": "🍅", "shelf": 3 },
+  { "id": "carrots", "title": "Carrots", "price": 1.8, "description": "Tops still on, good and earthy.", "emoji": "🥕", "shelf": 3 },
+  { "id": "honey", "title": "Local Honey", "price": 7.5, "description": "Wildflower, from the hives out back.", "emoji": "🍯", "shelf": 3 },
+  { "id": "potatoes", "title": "Potatoes", "price": 2.2, "description": "Good keepers, a little dirt still on them.", "emoji": "🥔", "shelf": 3 },
+  { "id": "lettuce", "title": "Butterhead Lettuce", "price": 2.4, "description": "Loose leaves, crisp core, picked this morning.", "emoji": "🥬", "shelf": 4 },
+  { "id": "onions", "title": "Yellow Onions", "price": 1.5, "description": "Papery skins, good and pungent.", "emoji": "🧅", "shelf": 4 },
+  { "id": "peppers", "title": "Bell Peppers", "price": 3.1, "description": "Mixed colors, firm and glossy.", "emoji": "🫑", "shelf": 4 },
+  { "id": "garlic", "title": "Garlic", "price": 1.2, "description": "Sold by the bulb, plump cloves.", "emoji": "🧄", "shelf": 4 }
+]

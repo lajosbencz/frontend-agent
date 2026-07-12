@@ -1,0 +1,69 @@
+{
+  "name": "@lajosbencz/frontend-agent",
+  "version": "1.0.0",
+  "description": "Drive the LFM2.5-230M frontend-agent model in the browser: tool-calling + RAG-grounded answering, fully typed. Loads the GGUF from Hugging Face via wllama.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lajosbencz/frontend-agent.git",
+    "directory": "packages/frontend-agent"
+  },
+  "homepage": "https://github.com/lajosbencz/frontend-agent",
+  "bugs": {
+    "url": "https://github.com/lajosbencz/frontend-agent/issues"
+  },
+  "author": "Lajos Bencz",
+  "keywords": [
+    "lfm2",
+    "llm",
+    "agent",
+    "tool-calling",
+    "rag",
+    "wllama",
+    "edge",
+    "on-device",
+    "browser"
+  ],
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./rag": {
+      "types": "./dist/rag.d.ts",
+      "import": "./dist/rag.js"
+    },
+    "./reference": {
+      "types": "./dist/reference.d.ts",
+      "import": "./dist/reference.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "@wllama/wllama": ">=3.5.0",
+    "minisearch": ">=7.0.0",
+    "stemmer": ">=2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@wllama/wllama": { "optional": true },
+    "minisearch": { "optional": true },
+    "stemmer": { "optional": true }
+  },
+  "devDependencies": {
+    "@wllama/wllama": "^3.5.1",
+    "minisearch": "^7.2.0",
+    "stemmer": "^2.0.1",
+    "tsup": "^8.5.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}

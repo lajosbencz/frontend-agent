@@ -1,0 +1,138 @@
+import { micSupported, startRecording, type Recording } from '~/lib/agent/speech/recorder'
+import { sttEnabled as enabled } from './usePreferences'
+
+// Optional voice layer for the assistant: record → Whisper-tiny → text, fed into the normal
+// send path. State is a module-level singleton (like the wllama engine promise) so the mic
+// button and its status stay in sync wherever the panel is mounted. Everything is client-only;
+// the whisper module is imported lazily on first use so it never bloats the initial bundle.
+
+export type SpeechStatus = 'idle' | 'recording' | 'transcribing' | 'error'
+export type MicPermission = 'unknown' | 'granted' | 'denied'
+
+export interface SpeechState {
+  status: Ref<SpeechStatus>
+  backend: Ref<'webgpu' | 'wasm' | null>
+  modelProgress: Ref<number | null>
+  errorMessage: Ref<string | null>
+}
+
+// STT is off by default; the user opts in via the panel toggle, which requests mic permission
+// once. `enabled` is the shared preference (see usePreferences); the rest is a module-level
+// singleton so recording state stays in sync wherever the panel mounts.
+const permission = ref<MicPermission>('unknown')
+const status = ref<SpeechStatus>('idle')
+const backend = ref<'webgpu' | 'wasm' | null>(null)
+const modelProgress = ref<number | null>(null)
+const errorMessage = ref<string | null>(null)
+const state: SpeechState = { status, backend, modelProgress, errorMessage }
+
+let recording: Recording | null = null
+
+/** Prompt for mic access (silent if already granted). Returns whether access is available. */
+async function requestMicPermission(): Promise<boolean> {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    stream.getTracks().forEach((t) => t.stop()) // we only wanted the grant
+    permission.value = 'granted'
+    return true
+  } catch (err) {
+    permission.value = 'denied'
+    console.error('[speech] mic permission denied:', err)
+    return false
+  }
+}
+
+export function useSpeechInput() {
+  const supported = import.meta.client && micSupported()
+
+  /** Turn STT on: request permission if we don't already have it. No-op if it can't be granted. */
+  async function enable() {
+    if (!supported) {
+      status.value = 'error'
+      errorMessage.value = 'Voice input needs a mic and a secure (https) context.'
+      return
+    }
+    if (permission.value !== 'granted' && !(await requestMicPermission())) {
+      status.value = 'error'
+      errorMessage.value = 'Microphone permission was blocked - enable it in the browser to use voice.'
+      return
+    }
+    errorMessage.value = null
+    if (status.value === 'error') status.value = 'idle'
+    enabled.value = true
+  }
+
+  /** Turn STT off: stop any in-flight capture and hide the mic. Permission grant is kept. */
+  function disable() {
+    cancel()
+    enabled.value = false
+  }
+
+  async function toggleEnabled() {
+    if (enabled.value) disable()
+    else await enable()
+  }
+
+  /**
+   * One button for the whole cycle. Returns the transcript when a take completes (caller sends
+   * it), or null when it just started recording / errored. Model load is kicked off in parallel
+   * with recording so it's usually warm by the time the user stops talking.
+   */
+  async function toggle(): Promise<string | null> {
+    if (!enabled.value) return null
+
+    if (status.value === 'recording') {
+      const rec = recording
+      recording = null
+      status.value = 'transcribing'
+      try {
+        const audio = await rec!.stop()
+        const { transcribe } = await import('~/lib/agent/speech/whisperClient')
+        const text = await transcribe(audio, state)
+        status.value = 'idle'
+        return text || null
+      } catch (err) {
+        status.value = 'error'
+        errorMessage.value = 'Transcription failed - check mic permission, or try again.'
+        console.error('[speech] transcription failed:', err)
+        return null
+      }
+    }
+
+    // start
+    errorMessage.value = null
+    try {
+      // Warm the model while the user speaks.
+      const { preloadWhisper } = await import('~/lib/agent/speech/whisperClient')
+      preloadWhisper(state)
+      recording = await startRecording()
+      status.value = 'recording'
+    } catch (err) {
+      status.value = 'error'
+      errorMessage.value = 'Could not access the microphone - check browser permissions.'
+      console.error('[speech] mic start failed:', err)
+    }
+    return null
+  }
+
+  function cancel() {
+    recording?.cancel()
+    recording = null
+    if (status.value === 'recording') status.value = 'idle'
+  }
+
+  return {
+    supported,
+    enabled,
+    permission,
+    status,
+    backend,
+    modelProgress,
+    errorMessage,
+    enable,
+    disable,
+    toggleEnabled,
+    toggle,
+    cancel,
+  }
+}
