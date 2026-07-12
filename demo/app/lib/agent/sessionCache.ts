@@ -1,4 +1,4 @@
-import type { Session } from '@lajosbencz/frontend-agent'
+import type { Session } from 'frontend-agent'
 import { onEngineReset } from './engine'
 
 /** Memoize a domain's Session builder; auto-invalidates when the shared engine resets (backend switch). */

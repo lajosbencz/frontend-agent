@@ -30,7 +30,7 @@ a cross-origin-isolated context (COOP/COEP) for multi-threaded WASM - the dev se
 
 - `content/` - BrewCraft product catalog + KB docs, Emporium news, Vendor KB (`@nuxt/content`)
 - `app/lib/agent/domains/{brewcraft,emporium,vendor}.ts` - wire the
-  [`@lajosbencz/frontend-agent`](../packages/frontend-agent) library to each domain (persona, tools,
+  [`frontend-agent`](../packages/frontend-agent) library to each domain (persona, tools,
   Pinia cart/navigation, local RAG index)
 - `app/lib/agent/engine.ts` - the shared wllama engine singleton (one model load, all three domains)
 - `app/lib/agent/speech/` - optional Whisper voice input (transcript -> `session.submit`)
@@ -40,7 +40,7 @@ a cross-origin-isolated context (COOP/COEP) for multi-threaded WASM - the dev se
 
 ## Model
 
-The model is driven entirely by the `@lajosbencz/frontend-agent` library, which loads the GGUF from
+The model is driven entirely by the `frontend-agent` library, which loads the GGUF from
 Hugging Face by default (`lazos/lfm2.5-230m-frontend-agent`, v1.0.0, Q6_K) and caches it in the
 browser (OPFS). To change model/version/quant or self-host, pass `model`/`modelUrl` to the
 `WllamaEngine` built in `app/lib/agent/engine.ts`.

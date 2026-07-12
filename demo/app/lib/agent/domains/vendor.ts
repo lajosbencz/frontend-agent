@@ -13,9 +13,9 @@ import {
   buildSystemPrompt,
   type ToolDefinition,
   type Session,
-} from '@lajosbencz/frontend-agent'
-import { referenceTools } from '@lajosbencz/frontend-agent/reference'
-import { LocalMiniSearchRAG } from '@lajosbencz/frontend-agent/rag'
+} from 'frontend-agent'
+import { referenceTools } from 'frontend-agent/reference'
+import { LocalMiniSearchRAG } from 'frontend-agent/rag'
 import { useAgentStore } from '~/stores/agent'
 import { useVendorStore } from '~/stores/vendor'
 import { groceries } from '~/data/vendor-groceries'

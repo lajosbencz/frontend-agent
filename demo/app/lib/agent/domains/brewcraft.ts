@@ -1,8 +1,8 @@
 // BrewCraft domain: espresso storefront persona, wired to its own RAG index + cart.
 
-import { createAgent, buildRegistry, buildSystemPrompt, type Session } from '@lajosbencz/frontend-agent'
-import { referenceTools } from '@lajosbencz/frontend-agent/reference'
-import { LocalMiniSearchRAG } from '@lajosbencz/frontend-agent/rag'
+import { createAgent, buildRegistry, buildSystemPrompt, type Session } from 'frontend-agent'
+import { referenceTools } from 'frontend-agent/reference'
+import { LocalMiniSearchRAG } from 'frontend-agent/rag'
 import { useAgentStore } from '~/stores/agent'
 import { useCartStore } from '~/stores/cart'
 import { useNavigationStore } from '~/stores/navigation'

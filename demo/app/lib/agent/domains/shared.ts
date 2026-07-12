@@ -1,5 +1,5 @@
-import type { Session } from '@lajosbencz/frontend-agent'
-import type { CartHandlers } from '@lajosbencz/frontend-agent/reference'
+import type { Session } from 'frontend-agent'
+import type { CartHandlers } from 'frontend-agent/reference'
 import { useAgentStore } from '~/stores/agent'
 import { useCartStore } from '~/stores/cart'
 import { resetEngine } from '../engine'

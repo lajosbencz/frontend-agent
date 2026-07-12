@@ -3,7 +3,7 @@
 
 import wllamaWasmUrl from '@wllama/wllama/esm/wasm/wllama.wasm?url'
 import { CacheManager } from '@wllama/wllama'
-import { WllamaEngine, resolveModelUrl, type EngineStatus } from '@lajosbencz/frontend-agent'
+import { WllamaEngine, resolveModelUrl, type EngineStatus, type HFModelRef } from 'frontend-agent'
 
 export interface EngineCallbacks {
   onStatus?: (status: EngineStatus) => void
@@ -21,8 +21,21 @@ export function onEngineReset(cb: () => void): void {
   resetListeners.add(cb)
 }
 
+/** Reads the runtime-configurable model override (empty fields fall through to the library's own
+ *  default) - used for both the actual load and the cache-check/clear below, so they always agree
+ *  on which GGUF they're talking about. */
+function getModelRef(): HFModelRef {
+  const { modelRepo, modelVersion, modelQuant } = useRuntimeConfig().public
+  const ref: HFModelRef = {}
+  if (modelRepo) ref.repo = modelRepo
+  if (modelVersion) ref.version = modelVersion
+  if (modelQuant) ref.quant = modelQuant
+  return ref
+}
+
 function buildEngine(cb: EngineCallbacks): Promise<WllamaEngine> {
   const engine = new WllamaEngine({
+    model: getModelRef(),
     wllamaAssets: { default: wllamaWasmUrl },
     backend: backendPref,
     onStatus: (s) => cb.onStatus?.(s),
@@ -46,17 +59,17 @@ export function getEngine(cb: EngineCallbacks = {}): Promise<WllamaEngine> {
   return enginePromise
 }
 
-/** Whether the default model's GGUF is already in the OPFS cache - no network fetch needed to load it. */
+/** Whether the configured model's GGUF is already in the OPFS cache - no network fetch needed to load it. */
 export async function isModelCached(): Promise<boolean> {
   const cache = new CacheManager()
-  const name = await cache.getNameFromURL(resolveModelUrl())
+  const name = await cache.getNameFromURL(resolveModelUrl(getModelRef()))
   return (await cache.getSize(name)) >= 0
 }
 
-/** Delete the default model's GGUF from the OPFS cache. Does not touch an already-loaded engine. */
+/** Delete the configured model's GGUF from the OPFS cache. Does not touch an already-loaded engine. */
 export async function clearModelCache(): Promise<void> {
   const cache = new CacheManager()
-  await cache.delete(resolveModelUrl())
+  await cache.delete(resolveModelUrl(getModelRef()))
 }
 
 /** Tear down and reload the engine (e.g. on a backend switch). OPFS-cached, so no re-download. */
