@@ -1,5 +1,7 @@
 # frontend-agent
 
+[Demo - Github Pages](https://lajosbencz.github.io/frontend-agent/)
+
 A generic English **web/front-end agent** built on [LiquidAI LFM2.5-230M](https://huggingface.co/LiquidAI/LFM2.5-230M), small enough to run
 **entirely in the browser** (edge / local inference via [wllama](https://github.com/ngxson/wllama), no server-side model). It doesn't
 just chat - it calls real tools to act on a page (search, navigate, cart operations) and answers
