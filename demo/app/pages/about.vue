@@ -1,13 +1,4 @@
 <script setup lang="ts">
-const tools = [
-  'search_catalog',
-  'search_knowledge',
-  'add_to_cart',
-  'remove_from_cart',
-  'view_cart',
-  'clear_cart',
-  'navigate',
-]
 
 const demos = [
   { to: '/brewcraft', name: 'BrewCraft', desc: 'browse, search, and check out' },
@@ -37,7 +28,7 @@ const demos = [
         <br/>
         Using a 230M parameter model for diverse domains is not feasible.
         During training, the imprinting of different, generalized uses-cases compete for attention.
-        The fidelity of interaction is also lacking, and for multi-turn conversations it tends to follow the trainined structure, instead of the actual context.
+        The fidelity of interaction is also lacking, and for multi-turn conversations it tends to follow the trainined<!-- sic. --> structure, instead of the actual context.
         <br/>
         Stay tuned for an eval on
         <a class="hub-link" href="https://huggingface.co/LiquidAI/LFM2.5-350M" target="_blank">350M</a>
@@ -45,33 +36,45 @@ const demos = [
       </p>
 
       <section class="mt-[34px]">
-        <h2 class="mb-2 text-[16px] font-semibold tracking-[-0.02em] text-[var(--hub-text)]">The vision</h2>
-        <p class="mt-[22px] text-[14px] leading-[1.5] text-[var(--hub-text-2)]">
+        <h2 class="mb-2 text-[16px] font-semibold tracking-[-0.02em] text-[var(--hub-text)]">So why?</h2>
+        <p class="text-[13px] leading-[1.5] text-[var(--hub-text-2)]">
+          Besides the cool factor, running an on-device agent can be useful for:
+          <ul class="list-disc ml-3 mt-1 text-[12px]">
+            <li>offline usage</li>
+            <li>user privacy</li>
+            <li>user accessibility</li>
+            <li>hosting cost reduction</li>
+          </ul>
+        </p>
+        <p class="mt-2 text-[13px] leading-[1.5] text-[var(--hub-text-2)]">
+          Combining it with <em>ARIA Roles</em> and <em>Semantic Elements</em> can make navigating a complex UI a breeze.
+        </p>
+      </section>
+
+      <section class="mt-[34px]">
+        <h2 class="mb-2 text-[16px] font-semibold tracking-[-0.02em] text-[var(--hub-text)]">Testbed</h2>
+        <p class="text-[14px] leading-[1.5] text-[var(--hub-text-2)]">
           This site is three demo storefronts sharing one on-device agent: a fine-tuned model that runs entirely in your browser and
-          drives the interface with tools, rather than just answering in text. Each demo gives it a
+          drives the interface with tools, rather than just answering in text.
+        </p>
+        <p class="mt-2 text-[13px] leading-[1.5] text-[var(--hub-text-2)]">
+          Each demo gives it a
           different persona, catalog, and tool set -
           <template v-for="(d, i) in demos" :key="d.to">
             <NuxtLink :to="d.to" class="hub-link">{{ d.name }}</NuxtLink><span v-if="i < demos.length - 1">, </span>
           </template>
           - to show the same core loop adapts to very different UIs.
         </p>
+        <p class="mt-2 text-[13px] leading-[1.5] text-[var(--hub-text-2)]">
+          The live catalog and knowledge is injected as context, so replies stay grounded.
+          Tools provide additional interactivity and context retrieval.
+        </p>
       </section>
 
       <section class="mt-[34px]">
-        <h2 class="mb-2 text-[16px] font-semibold tracking-[-0.02em] text-[var(--hub-text)]">Example tools</h2>
-        <div class="mt-[26px] mb-2 flex flex-wrap gap-2">
-          <span
-            v-for="t in tools"
-            :key="t"
-            class="hub-pill border border-[var(--hub-accent-tint-border)] font-[ui-monospace,monospace] text-[11px] text-[var(--hub-accent)]"
-          >{{ t }}</span>
-        </div>
-      </section>
-
-      <section class="mt-[34px]">
-        <h2 class="mb-2 text-[16px] font-semibold tracking-[-0.02em] text-[var(--hub-text)]">Runs on-device</h2>
+        <h2 class="mb-2 text-[16px] font-semibold tracking-[-0.02em] text-[var(--hub-text)]">Forecast: Sunny</h2>
         <p class="text-[13px] leading-[1.5] text-[var(--hub-text-2)]">
-          There is no server doing inference. The model loads once and streams tokens right in
+          There are no cloud servers doing inference. The model loads once and streams tokens right in
           your browser - WebGPU when your machine offers it, otherwise CPU/WASM via
           <span class="font-[ui-monospace,monospace] text-[0.92em]">wllama</span>. 
         </p>
@@ -79,28 +82,6 @@ const demos = [
           Voice input and voice replies are on-device models too
           (Whisper for speech-to-text, a small VITS model for text-to-speech) - nothing is sent
           anywhere for either.
-        </p>
-      </section>
-
-      <section class="mt-[34px]">
-        <h2 class="mb-2 text-[16px] font-semibold tracking-[-0.02em] text-[var(--hub-text)]">Grounded, not improvised</h2>
-        <p class="text-[13px] leading-[1.5] text-[var(--hub-text-2)]">
-          The live catalog and knowledge is injected as context, so replies stay grounded.
-          Tools provide additional interactivity and context retrieval.
-        </p>
-      </section>
-
-      <section class="mt-[34px]">
-        <h2 class="mb-2 text-[16px] font-semibold tracking-[-0.02em] text-[var(--hub-text)]">Same model, different domains</h2>
-        <p class="text-[13px] leading-[1.5] text-[var(--hub-text-2)]">
-          BrewCraft and Emporium reuse the same catalog/cart tool shape over completely
-          different data and persona.
-        </p>
-        <p class="mt-2 text-[13px] leading-[1.5] text-[var(--hub-text-2)]">
-          The Vendor is a different kind of demo entirely: its own grocery inventory and
-          knowledge base (haggling, recipes), the same trained tool set as the other two plus
-          one bespoke addition (<span class="font-[ui-monospace,monospace] text-[0.92em]">pay</span>,
-          to finalize a sale), and no cart page at all - the agent, not a form, is the whole interface.
         </p>
       </section>
 
