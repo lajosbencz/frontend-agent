@@ -37,7 +37,7 @@ export default defineNuxtConfig({
       modelRepo: '',
       // NUXT_PUBLIC_MODEL_VERSION: main
       modelVersion: '',
-      // NUXT_PUBLIC_MODEL_QUANT: Q6_K_M
+      // NUXT_PUBLIC_MODEL_QUANT: Q6_K
       modelQuant: '',
     },
   },
