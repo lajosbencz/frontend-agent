@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAgentStore, type ToolCallRecord } from '~/stores/agent'
 import { useSpeechOutput } from '~/composables/useSpeechOutput'
+import { renderMarkdown } from '~/lib/markdown'
 import type { DomainKey } from '~/lib/agent/domains'
 
 const props = defineProps<{ domain: DomainKey; hint: string; thinkingLabel?: string }>()
@@ -58,7 +59,7 @@ const pct = computed(() => {
             @click="inspectedTool = t"
           >🔧</button>
         </div>
-        <span v-if="e.content" class="text-[12px] leading-[1.4] break-words text-text-2">{{ e.content }}</span>
+        <span v-if="e.content" class="text-[12px] leading-[1.4] break-words text-text-2" v-html="renderMarkdown(e.content)" />
         <div v-if="e.content && voice.enabled.value" class="flex items-center gap-1.5">
           <template v-if="voice.speakingIndex.value === i && (voice.status.value === 'speaking' || voice.status.value === 'paused')">
             <button

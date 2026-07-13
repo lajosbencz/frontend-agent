@@ -12,11 +12,12 @@
   },
   "dependencies": {
     "@huggingface/transformers": "^4.2.0",
-    "frontend-agent": "*",
     "@nuxt/content": "^3.14.0",
     "@pinia/nuxt": "^0.11.3",
     "@wllama/wllama": "^3.5.1",
     "better-sqlite3": "^12.11.1",
+    "frontend-agent": "*",
+    "marked": "^18.0.6",
     "minisearch": "^7.2.0",
     "nuxt": "^4.4.8",
     "pinia": "^3.0.4",
