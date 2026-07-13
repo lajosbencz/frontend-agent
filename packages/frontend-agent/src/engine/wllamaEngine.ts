@@ -6,11 +6,8 @@ import type { AgentEngine, ChatMessage, EngineGenerateResult } from './types'
 
 /** Reference to a GGUF published on the Hugging Face Hub. */
 export interface HFModelRef {
-  /** `owner/name`. Default `lazos/lfm2.5-230m-frontend-agent`. */
   repo?: string
-  /** Release/version tag embedded in the filename. Default `v1.0.0`. */
   version?: string
-  /** Quantization suffix. Default `Q4_K_M`. */
   quant?: string
 }
 
@@ -37,9 +34,7 @@ export interface WllamaEngineConfig {
 
 const DEFAULT_MODEL: Required<HFModelRef> = {
   repo: 'lazos/lfm2.5-230m-frontend-agent',
-  version: 'v1.0.0',
-  // Q6_K is the quality sweet spot for this 230M model: it matches Q8 on held-out eval (96.3%) while
-  // Q4_K_M drops ~2 pts (worse query formulation / grounding). ~191 MB.
+  version: 'main',
   quant: 'Q6_K',
 }
 
@@ -47,7 +42,7 @@ const DEFAULT_MODEL: Required<HFModelRef> = {
 export function resolveModelUrl(ref: HFModelRef = {}): string {
   const { repo, version, quant } = { ...DEFAULT_MODEL, ...ref }
   const basename = repo.split('/').pop() ?? repo
-  return `https://huggingface.co/${repo}/resolve/main/${basename}-${version}-${quant}.gguf`
+  return `https://huggingface.co/${repo}/resolve/${version}/${basename}-${quant}.gguf`
 }
 
 async function detectWebGPU(): Promise<boolean> {

@@ -31,14 +31,13 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      // Empty => client-side RAG over the bundled static index (the zero-infra default).
-      // Set NUXT_PUBLIC_RAG_ENDPOINT to a POST /search URL to use your own vector/fulltext DB.
+      // NUXT_PUBLIC_RAG_ENDPOINT: a POST /search URL to use your own vector/fulltext DB.
       ragEndpoint: '',
-      // Empty => the frontend-agent library's own default (currently lazos/lfm2.5-230m-frontend-agent
-      // v1.0.0 Q6_K). Set NUXT_PUBLIC_MODEL_REPO / _VERSION / _QUANT to pin a different release
-      // (e.g. a new eval-passed model version) without a library bump or a code change.
+      // NUXT_PUBLIC_MODEL_REPO: lazos/lfm2.5-230m-frontend-agent
       modelRepo: '',
+      // NUXT_PUBLIC_MODEL_VERSION: main
       modelVersion: '',
+      // NUXT_PUBLIC_MODEL_QUANT: Q6_K_M
       modelQuant: '',
     },
   },

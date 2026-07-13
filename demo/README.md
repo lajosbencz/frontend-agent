@@ -41,6 +41,6 @@ a cross-origin-isolated context (COOP/COEP) for multi-threaded WASM - the dev se
 ## Model
 
 The model is driven entirely by the `frontend-agent` library, which loads the GGUF from
-Hugging Face by default (`lazos/lfm2.5-230m-frontend-agent`, v1.0.0, Q6_K) and caches it in the
+Hugging Face by default (`lazos/lfm2.5-230m-frontend-agent`, main, Q6_K) and caches it in the
 browser (OPFS). To change model/version/quant or self-host, pass `model`/`modelUrl` to the
 `WllamaEngine` built in `app/lib/agent/engine.ts`.
