@@ -50,7 +50,7 @@ const demos = [
                 <NuxtLink
                   to="/about"
                   class="mt-1 inline-block text-[12px] text-[var(--hub-muted)] no-underline hover:text-[var(--hub-accent)]"
-                >→ How it works</NuxtLink>
+                >→ Does it work?</NuxtLink>
               </li>
               <li>
                 <a

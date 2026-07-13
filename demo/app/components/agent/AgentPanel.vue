@@ -58,8 +58,9 @@ function toggleBackend() {
 watch(
   () => agent.transcript.length,
   () => {
-    const last = agent.transcript[agent.transcript.length - 1]
-    if (last?.role === 'assistant') voice.speak(last.content)
+    const lastIndex = agent.transcript.length - 1
+    const last = agent.transcript[lastIndex]
+    if (last?.role === 'assistant') voice.speak(last.content, lastIndex)
   },
 )
 

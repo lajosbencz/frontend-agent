@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { useAgentStore, type ToolCallRecord } from '~/stores/agent'
+import { useSpeechOutput } from '~/composables/useSpeechOutput'
 import type { DomainKey } from '~/lib/agent/domains'
 
 const props = defineProps<{ domain: DomainKey; hint: string; thinkingLabel?: string }>()
 
 const agent = useAgentStore(props.domain)
+const voice = useSpeechOutput()
 const bodyEl = ref<HTMLElement | null>(null)
 
 const inspectedTool = ref<ToolCallRecord | null>(null)
@@ -57,6 +59,43 @@ const pct = computed(() => {
           >🔧</button>
         </div>
         <span v-if="e.content" class="text-[12px] leading-[1.4] break-words text-text-2">{{ e.content }}</span>
+        <div v-if="e.content && voice.enabled.value" class="flex items-center gap-1.5">
+          <template v-if="voice.speakingIndex.value === i && (voice.status.value === 'speaking' || voice.status.value === 'paused')">
+            <button
+              v-if="voice.status.value === 'speaking'"
+              type="button"
+              class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-sm border border-border-2 bg-surface text-[11px] text-accent transition-colors hover:border-border-hover"
+              title="Pause"
+              aria-label="Pause spoken reply"
+              @click="voice.pause"
+            >⏸</button>
+            <button
+              v-else
+              type="button"
+              class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-sm border border-border-2 bg-surface text-[11px] text-accent transition-colors hover:border-border-hover"
+              title="Resume"
+              aria-label="Resume spoken reply"
+              @click="voice.resume"
+            >▶</button>
+            <button
+              type="button"
+              class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-sm border border-border-2 bg-surface text-[11px] text-text-faint transition-colors hover:border-border-hover hover:text-text"
+              title="Stop"
+              aria-label="Stop spoken reply"
+              @click="voice.stop"
+            >⏹</button>
+          </template>
+          <!-- Not the active track (or nothing playing) - a persistent replay button, since
+               stopping a track no longer removes the ability to hear it again. -->
+          <button
+            v-else
+            type="button"
+            class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-sm border border-border-2 bg-surface text-[11px] text-text-faint transition-colors hover:border-border-hover hover:text-accent"
+            title="Play spoken reply"
+            aria-label="Play spoken reply"
+            @click="voice.speak(e.content, i)"
+          >▶</button>
+        </div>
       </div>
     </template>
 

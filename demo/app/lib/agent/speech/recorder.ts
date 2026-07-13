@@ -1,6 +1,17 @@
-// Mic capture → mono 16kHz Float32 PCM, the format Whisper expects. Uses MediaRecorder for
-// capture and an OfflineAudioContext for clean downmix + resample (no manual DSP). getUserMedia
-// requires a secure context (https/localhost) - the caller gates on `micSupported()`.
+// Mic capture -> mono 16kHz Float32 PCM, the format Whisper expects. getUserMedia requires a
+// secure context (https/localhost) - the caller gates on `micSupported()`.
+//
+// Captures raw PCM directly off the Web Audio graph (ScriptProcessorNode) instead of going
+// through MediaRecorder -> Blob -> decodeAudioData. That round-trip forces an encode (browser's
+// default opus/webm choice) and a decode of it back, and both steps have real, filed engine bugs
+// (Chromium #41290979 "decodeAudioData unable to decode... from a MediaRecorder blob"; Firefox
+// #1267248 "MediaRecorder audio quality depends on AudioContext") that can silently degrade or
+// blank the result depending on browser/OS/codec - which is exactly the "always transcribes
+// nonsense regardless of what was said" symptom this replaces. Grabbing samples straight off the
+// graph has no container/codec in the loop at all, so there's nothing there to decode wrong.
+// ScriptProcessorNode is deprecated in favor of AudioWorkletNode, but AudioWorklet needs its own
+// module file loaded via `audioContext.audioWorklet.addModule(url)` - real added complexity for
+// no behavioral difference here. ScriptProcessorNode remains supported in every current browser.
 
 export interface Recording {
   /** Stop capture, release the mic, and return mono 16kHz samples. */
@@ -10,73 +21,73 @@ export interface Recording {
 }
 
 export function micSupported(): boolean {
-  return (
-    typeof navigator !== 'undefined' &&
-    !!navigator.mediaDevices?.getUserMedia &&
-    typeof MediaRecorder !== 'undefined'
-  )
+  return typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia && typeof AudioContext !== 'undefined'
 }
+
+const TARGET_SAMPLE_RATE = 16000
+// 4096 frames @ 16kHz ~= 256ms per chunk - small enough for a responsive stop(), large enough to
+// avoid excessive callback overhead.
+const BUFFER_SIZE = 4096
 
 export async function startRecording(): Promise<Recording> {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-  const recorder = new MediaRecorder(stream)
-  const chunks: Blob[] = []
-  recorder.ondataavailable = (e) => {
-    if (e.data.size) chunks.push(e.data)
-  }
-  recorder.start()
+  // Constructing the context AT the target rate makes the browser resample the live mic input to
+  // 16kHz as part of the normal audio graph - no separate manual resample step needed afterward.
+  const ctx = new AudioContext({ sampleRate: TARGET_SAMPLE_RATE })
+  const source = ctx.createMediaStreamSource(stream)
+  const processor = ctx.createScriptProcessor(BUFFER_SIZE, source.channelCount, 1)
+  const chunks: Float32Array[] = []
 
-  const release = () => stream.getTracks().forEach((t) => t.stop())
+  processor.onaudioprocess = (e) => {
+    const input = e.inputBuffer
+    if (input.numberOfChannels === 1) {
+      chunks.push(input.getChannelData(0).slice())
+    } else {
+      const l = input.getChannelData(0)
+      const r = input.getChannelData(1)
+      const mono = new Float32Array(l.length)
+      for (let i = 0; i < l.length; i++) mono[i] = (l[i] + r[i]) / 2
+      chunks.push(mono)
+    }
+  }
+
+  // A ScriptProcessorNode only fires onaudioprocess while connected through to the destination -
+  // route through a silent (gain 0) node so nothing is audibly played back (no mic-into-speakers
+  // feedback) while still keeping the graph "pulled".
+  const silence = ctx.createGain()
+  silence.gain.value = 0
+  source.connect(processor)
+  processor.connect(silence)
+  silence.connect(ctx.destination)
+
+  const teardown = () => {
+    processor.disconnect()
+    source.disconnect()
+    silence.disconnect()
+    stream.getTracks().forEach((t) => t.stop())
+    void ctx.close()
+  }
+
+  const concat = (): Float32Array => {
+    const total = chunks.reduce((n, c) => n + c.length, 0)
+    const out = new Float32Array(total)
+    let offset = 0
+    for (const c of chunks) {
+      out.set(c, offset)
+      offset += c.length
+    }
+    return out
+  }
 
   return {
-    stop: () =>
-      new Promise<Float32Array>((resolve, reject) => {
-        recorder.onstop = async () => {
-          release()
-          try {
-            resolve(await blobToMono16k(new Blob(chunks, { type: recorder.mimeType })))
-          } catch (err) {
-            reject(err)
-          }
-        }
-        recorder.stop()
-      }),
+    stop: async () => {
+      processor.onaudioprocess = null
+      teardown()
+      return concat()
+    },
     cancel: () => {
-      recorder.onstop = null
-      if (recorder.state !== 'inactive') recorder.stop()
-      release()
+      processor.onaudioprocess = null
+      teardown()
     },
   }
-}
-
-async function blobToMono16k(blob: Blob): Promise<Float32Array> {
-  const buf = await blob.arrayBuffer()
-  const ctx = new AudioContext()
-  const decoded = await ctx.decodeAudioData(buf)
-  await ctx.close()
-  return resampleTo16k(downmix(decoded), decoded.sampleRate)
-}
-
-function downmix(audio: AudioBuffer): Float32Array {
-  if (audio.numberOfChannels === 1) return audio.getChannelData(0).slice()
-  const l = audio.getChannelData(0)
-  const r = audio.getChannelData(1)
-  const out = new Float32Array(l.length)
-  for (let i = 0; i < l.length; i++) out[i] = (l[i] + r[i]) / 2
-  return out
-}
-
-async function resampleTo16k(input: Float32Array, srcRate: number): Promise<Float32Array> {
-  const TARGET = 16000
-  if (srcRate === TARGET) return input
-  const frames = Math.max(1, Math.ceil((input.length * TARGET) / srcRate))
-  const offline = new OfflineAudioContext(1, frames, TARGET)
-  const src = offline.createBuffer(1, input.length, srcRate)
-  src.copyToChannel(input, 0)
-  const node = offline.createBufferSource()
-  node.buffer = src
-  node.connect(offline.destination)
-  node.start()
-  const rendered = await offline.startRendering()
-  return rendered.getChannelData(0)
 }

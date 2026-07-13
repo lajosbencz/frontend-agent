@@ -22,19 +22,37 @@ const demos = [
       <NuxtLink to="/" class="mb-6 inline-block text-[11px] text-[var(--hub-muted)] no-underline hover:text-[var(--hub-accent)]">← Back</NuxtLink>
 
       <h1 class="m-0 text-[clamp(1.5rem,1.1rem+2vw,2.1rem)] leading-[1.1] font-bold tracking-[-0.03em] text-[var(--hub-text)]">
-        How it works
+        Does it work?
       </h1>
 
+      <code><em>Well, yes, but actually no.</em></code>
+
       <p class="mt-[22px] text-[14px] leading-[1.5] text-[var(--hub-text-2)]">
-        This site is three demo storefronts sharing one on-device agent: a fine-tuned
-        <a class="text-[var(--hub-accent)] no-underline hover:underline" href="https://huggingface.co/LiquidAI/LFM2.5-230M" target="_blank">LFM2.5 - 230M</a> model that runs entirely in your browser and
-        drives the interface with tools, rather than just answering in text. Each demo gives it a
-        different persona, catalog, and tool set -
-        <template v-for="(d, i) in demos" :key="d.to">
-          <NuxtLink :to="d.to" class="text-[var(--hub-accent)] no-underline hover:underline">{{ d.name }}</NuxtLink><span v-if="i < demos.length - 1">, </span>
-        </template>
-        - to show the same core loop adapts to very different UIs.
+        <a class="text-[var(--hub-accent)] no-underline hover:underline" href="https://huggingface.co/LiquidAI/LFM2.5-230M" target="_blank">LFM2.5 - 230M</a>
+        is truly impressive for it's footprint, and the technical background to deliver and run a model embedded in a browser is
+        <a class="text-[var(--hub-accent)] no-underline hover:underline" href="https://github.com/ngxson/wllama" target="_blank">trivial</a>.
+        It picked up on training patterns in ~20M tokens, and easily manages structured tool calls.
+        <br/><br/>
+        <strong>But...</strong>
+        <br/>
+        Using a 230M parameter model for diverse domains is not feasible.
+        During training, the imprinting of different, generalized uses-cases compete for attention.
+        The fidelity of interaction is also lacking, and for multi-turn conversations it tends to follow the trainined structure, instead of the actual context.
+        Using a larger, more capable model would defeat the purpose of ubiquitous deployments.
       </p>
+
+      <section class="mt-[34px]">
+        <h2 class="mb-2 text-[16px] font-semibold tracking-[-0.02em] text-[var(--hub-text)]">The fun part</h2>
+        <p class="mt-[22px] text-[14px] leading-[1.5] text-[var(--hub-text-2)]">
+          This site is three demo storefronts sharing one on-device agent: a fine-tuned model that runs entirely in your browser and
+          drives the interface with tools, rather than just answering in text. Each demo gives it a
+          different persona, catalog, and tool set -
+          <template v-for="(d, i) in demos" :key="d.to">
+            <NuxtLink :to="d.to" class="text-[var(--hub-accent)] no-underline hover:underline">{{ d.name }}</NuxtLink><span v-if="i < demos.length - 1">, </span>
+          </template>
+          - to show the same core loop adapts to very different UIs.
+        </p>
+      </section>
 
       <div class="mt-[26px] mb-2 flex flex-wrap gap-2">
         <span

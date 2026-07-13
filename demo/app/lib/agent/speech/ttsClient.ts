@@ -53,6 +53,38 @@ async function getSynthesizer(state: VoiceState): Promise<Synthesizer> {
   return pipePromise
 }
 
+let activeSource: AudioBufferSourceNode | null = null
+let activeResolve: (() => void) | null = null
+
+/** Pause/resume suspend the whole AudioContext clock - simpler and more reliable than tracking a
+ *  playback offset and rescheduling a new AudioBufferSourceNode (which can't be paused natively). */
+export function pause(): void {
+  void audioCtx?.suspend()
+}
+
+export function resume(): void {
+  void audioCtx?.resume()
+}
+
+/** Stop the current utterance, if any. Resolves its `speak()` call immediately - doesn't wait on
+ *  the node's `ended` event, which may never fire while the context is suspended (paused). */
+export function stop(): void {
+  if (!activeSource) return
+  const source = activeSource
+  const resolveDone = activeResolve
+  activeSource = null
+  activeResolve = null
+  source.onended = null
+  try {
+    source.stop()
+  } catch {
+    /* already stopped/ended */
+  }
+  resolveDone?.()
+  // Don't leave the context suspended for the next utterance if we stopped mid-pause.
+  void audioCtx?.resume()
+}
+
 function playAudio(audio: Float32Array, samplingRate: number): Promise<void> {
   audioCtx ??= new AudioContext()
   const buffer = audioCtx.createBuffer(1, audio.length, samplingRate)
@@ -60,14 +92,25 @@ function playAudio(audio: Float32Array, samplingRate: number): Promise<void> {
   const source = audioCtx.createBufferSource()
   source.buffer = buffer
   source.connect(audioCtx.destination)
+  activeSource = source
   return new Promise((resolve) => {
-    source.onended = () => resolve()
+    activeResolve = resolve
+    source.onended = () => {
+      if (activeSource === source) {
+        activeSource = null
+        activeResolve = null
+      }
+      resolve()
+    }
     source.start()
   })
 }
 
-/** Synthesize and play `text`. Loads the model on first call (progress via `state`). */
+/** Synthesize and play `text`. Loads the model on first call (progress via `state`). Only one
+ *  track ever plays at once - stops whatever's currently active first. Resolves early if `stop()`
+ *  is called mid-utterance. */
 export async function speak(text: string, state: VoiceState): Promise<void> {
+  stop()
   const synthesizer = await getSynthesizer(state)
   const { audio, sampling_rate } = await synthesizer(text)
   await playAudio(audio, sampling_rate)

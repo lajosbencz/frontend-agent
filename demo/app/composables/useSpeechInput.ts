@@ -28,6 +28,20 @@ const state: SpeechState = { status, backend, modelProgress, errorMessage }
 
 let recording: Recording | null = null
 
+// Whisper hallucinates a stock word ("you", "Thank you.") on near-silent input rather than
+// failing loudly - a wrong/muted OS input device still passes getUserMedia's permission check,
+// so we can't tell from permission state alone. Catch it here instead of shipping nonsense text.
+const SILENCE_PEAK_THRESHOLD = 0.01
+
+function peakAmplitude(samples: Float32Array): number {
+  let peak = 0
+  for (let i = 0; i < samples.length; i++) {
+    const a = Math.abs(samples[i])
+    if (a > peak) peak = a
+  }
+  return peak
+}
+
 /** Prompt for mic access (silent if already granted). Returns whether access is available. */
 async function requestMicPermission(): Promise<boolean> {
   try {
@@ -87,6 +101,12 @@ export function useSpeechInput() {
       status.value = 'transcribing'
       try {
         const audio = await rec!.stop()
+        if (audio.length === 0 || peakAmplitude(audio) < SILENCE_PEAK_THRESHOLD) {
+          status.value = 'error'
+          errorMessage.value =
+            'No audio was picked up - check that the right microphone is selected (and not muted) in your browser/OS, then try again.'
+          return null
+        }
         const { transcribe } = await import('~/lib/agent/speech/whisperClient')
         const text = await transcribe(audio, state)
         status.value = 'idle'
