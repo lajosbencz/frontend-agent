@@ -45,6 +45,17 @@ onMounted(() => {
         >{{ l.label }}</NuxtLink>
       </nav>
       <div class="ml-auto flex items-center gap-2">
+        <svg
+          v-if="agent"
+          class="animate-nudge-x h-[34px] w-5 flex-none text-accent"
+          viewBox="0 0 20 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="3.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        ><path d="M5 6l8 6-8 6" /></svg>
         <button
           v-if="agent"
           class="flex cursor-pointer items-center gap-[9px] rounded-[9px] border border-border bg-surface py-[7px] pr-2.5 pl-3 text-[12px] text-text-muted transition-colors hover:border-border-hover hover:text-text"
