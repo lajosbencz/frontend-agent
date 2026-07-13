@@ -50,14 +50,21 @@ const demos = [
                 <NuxtLink
                   to="/about"
                   class="mt-1 inline-block text-[12px] text-[var(--hub-muted)] no-underline hover:text-[var(--hub-accent)]"
-                >→ How this works</NuxtLink>
+                >→ How it works</NuxtLink>
+              </li>
+              <li>
+                <a
+                  href="https://huggingface.co/lazos/lfm2.5-230m-frontend-agent"
+                  target="_blank"
+                  class="mt-1 inline-block text-[12px] text-[var(--hub-muted)] no-underline hover:text-[var(--hub-accent)]"
+                >→ Huggingface</a>
               </li>
               <li>
                 <a
                   href="https://github.com/lajosbencz/frontend-agent"
                   target="_blank"
                   class="mt-1 inline-block text-[12px] text-[var(--hub-muted)] no-underline hover:text-[var(--hub-accent)]"
-                >→ Github Source</a>
+                >→ Github</a>
               </li>
             </ul>
           </p>
