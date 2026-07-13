@@ -25,21 +25,23 @@ const cart = useCartStore(props.domain)
         <div
           v-for="line in cart.lines"
           :key="line.slug"
-          class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-4 border-b border-surface-4 py-4 last:border-b-0 max-[460px]:[grid-template-areas:'desc_total'_'step_remove'] max-[460px]:grid-cols-[1fr_auto]"
+          class="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-surface-4 py-4 last:border-b-0"
         >
-          <div class="flex min-w-0 flex-col gap-[3px] [grid-area:desc]">
-            <span class="font-display text-[13px] font-semibold tracking-[-0.01em]">{{ line.title }}</span>
+          <div class="flex min-w-0 flex-1 basis-40 flex-col gap-[3px]">
+            <span class="block truncate font-display text-[13px] font-semibold tracking-[-0.01em]">{{ line.title }}</span>
             <span class="font-mono text-[11px] text-text-muted">${{ line.price }} each</span>
           </div>
 
-          <div class="inline-flex items-center overflow-hidden rounded-md border border-border [grid-area:step]">
-            <button class="h-[34px] w-8 cursor-pointer border-none bg-surface text-[13.5px] text-text transition-colors hover:bg-surface-2" aria-label="Decrease" @click="cart.setQuantity(line.slug, Math.max(1, line.quantity - 1))">−</button>
-            <span class="min-w-[34px] border-x border-border text-center font-display text-[12.5px] leading-[34px] font-semibold">{{ line.quantity }}</span>
-            <button class="h-[34px] w-8 cursor-pointer border-none bg-surface text-[13.5px] text-text transition-colors hover:bg-surface-2" aria-label="Increase" @click="cart.setQuantity(line.slug, line.quantity + 1)">+</button>
-          </div>
+          <div class="ml-auto flex items-center gap-4">
+            <div class="inline-flex items-center overflow-hidden rounded-md border border-border">
+              <button class="h-[34px] w-8 cursor-pointer border-none bg-surface text-[13.5px] text-text transition-colors hover:bg-surface-2" aria-label="Decrease" @click="cart.setQuantity(line.slug, Math.max(1, line.quantity - 1))">−</button>
+              <span class="min-w-[34px] border-x border-border text-center font-display text-[12.5px] leading-[34px] font-semibold">{{ line.quantity }}</span>
+              <button class="h-[34px] w-8 cursor-pointer border-none bg-surface text-[13.5px] text-text transition-colors hover:bg-surface-2" aria-label="Increase" @click="cart.setQuantity(line.slug, line.quantity + 1)">+</button>
+            </div>
 
-          <span class="min-w-14 text-right font-display text-[13px] font-semibold [grid-area:total]">${{ line.price * line.quantity }}</span>
-          <button class="cursor-pointer border-none bg-transparent p-1 font-mono text-[11px] text-text-subtle [grid-area:remove] justify-self-end hover:text-accent hover:underline" @click="cart.remove(line.slug)">remove</button>
+            <span class="min-w-14 text-right font-display text-[13px] font-semibold">${{ line.price * line.quantity }}</span>
+            <button class="cursor-pointer border-none bg-transparent p-1 font-mono text-[11px] text-text-subtle hover:text-accent hover:underline" @click="cart.remove(line.slug)">remove</button>
+          </div>
         </div>
       </div>
 
