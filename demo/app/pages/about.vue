@@ -38,11 +38,14 @@ const demos = [
         Using a 230M parameter model for diverse domains is not feasible.
         During training, the imprinting of different, generalized uses-cases compete for attention.
         The fidelity of interaction is also lacking, and for multi-turn conversations it tends to follow the trainined structure, instead of the actual context.
-        Using a larger, more capable model would defeat the purpose of ubiquitous deployments.
+        <br/>
+        Stay tuned for an eval on
+        <a class="text-[var(--hub-accent)] no-underline hover:underline" href="https://huggingface.co/LiquidAI/LFM2.5-350M" target="_blank">350M</a>
+        at 1.5x the footprint.
       </p>
 
       <section class="mt-[34px]">
-        <h2 class="mb-2 text-[16px] font-semibold tracking-[-0.02em] text-[var(--hub-text)]">The fun part</h2>
+        <h2 class="mb-2 text-[16px] font-semibold tracking-[-0.02em] text-[var(--hub-text)]">The vision</h2>
         <p class="mt-[22px] text-[14px] leading-[1.5] text-[var(--hub-text-2)]">
           This site is three demo storefronts sharing one on-device agent: a fine-tuned model that runs entirely in your browser and
           drives the interface with tools, rather than just answering in text. Each demo gives it a
