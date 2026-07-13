@@ -1,6 +1,6 @@
 {
   "name": "frontend-agent",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Drive the LFM2.5-230M frontend-agent model in the browser: tool-calling + RAG-grounded answering, fully typed. Loads the GGUF from Hugging Face via wllama.",
   "license": "Apache-2.0",
   "type": "module",
