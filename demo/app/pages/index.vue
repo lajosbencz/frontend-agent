@@ -28,42 +28,30 @@ const demos = [
     <div class="mx-auto max-w-[860px] px-[clamp(1rem,4vw,24px)] pt-[clamp(40px,7vw,80px)] pb-16">
       <div class="flex flex-wrap items-start justify-between gap-6">
         <div class="min-w-[240px] flex-1">
-          <span class="font-[ui-monospace,monospace] text-[11px] font-semibold tracking-wider text-[var(--hub-accent)] uppercase">
-            <span
-              class="inline-block rounded-full bg-[var(--hub-accent-tint)] px-[9px] py-1 mx-1"
-            >language model</span>
-            <span
-              class="inline-block rounded-full bg-[var(--hub-accent-tint)] px-[9px] py-1 mx-1"
-            >frontend agent</span>
-            <span
-              class="inline-block rounded-full bg-[var(--hub-accent-tint)] px-[9px] py-1 mx-1"
-            >tech demo</span>
-          </span>
-
-          <h1 class="mt-5 text-[clamp(1.5rem,1rem+2vw,2.1rem)] leading-[1.1] font-bold tracking-[-0.03em] text-[var(--hub-text)]">
+          <h1 class="text-[clamp(1.5rem,1rem+2vw,2.1rem)] leading-[1.1] font-bold tracking-[-0.03em] text-[var(--hub-text)]">
             Generalist agent, on Your device
           </h1>
-          <p class="mt-4 max-w-[420px] text-[13px] leading-[1.5] text-[var(--hub-muted)]">
+          <p class="mt-4 pl-1 max-w-[420px] text-[13px] leading-[1.5] text-[var(--hub-muted)]">
             A tiny language model running entirely in your browser, driving various UIs with tools.
             <ul class="pt-3">
               <li>
                 <NuxtLink
                   to="/about"
-                  class="mt-1 inline-block text-[12px] text-[var(--hub-muted)] no-underline hover:text-[var(--hub-accent)]"
+                  class="hub-link-muted mt-1 inline-block text-[12px]"
                 >→ Does it work?</NuxtLink>
               </li>
               <li>
                 <a
                   href="https://huggingface.co/lazos/lfm2.5-230m-frontend-agent"
                   target="_blank"
-                  class="mt-1 inline-block text-[12px] text-[var(--hub-muted)] no-underline hover:text-[var(--hub-accent)]"
+                  class="hub-link-muted mt-1 inline-block text-[12px]"
                 >→ Huggingface</a>
               </li>
               <li>
                 <a
                   href="https://github.com/lajosbencz/frontend-agent"
                   target="_blank"
-                  class="mt-1 inline-block text-[12px] text-[var(--hub-muted)] no-underline hover:text-[var(--hub-accent)]"
+                  class="hub-link-muted mt-1 inline-block text-[12px]"
                 >→ Github</a>
               </li>
             </ul>
@@ -101,6 +89,14 @@ const demos = [
           <span class="mt-2 self-end font-[ui-monospace,monospace] text-[11px] font-medium text-[var(--hub-accent)]">Open →</span>
         </NuxtLink>
       </div>
+    
+      <p class="mt-6 pt-5 text-[11px] text-center tracking-wide text-[var(--hub-muted)]">
+        <code class="mx-1">language model</code>
+        -
+        <code class="mx-1">frontend agent</code>
+        -
+        <code class="mx-1">tech demo</code>
+      </p>
     </div>
 
     <UiModal v-model="settingsOpen">

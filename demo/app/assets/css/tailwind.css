@@ -175,6 +175,18 @@
    utility, so this stays a single hand-written class rather than an inlined arbitrary value. */
 @layer components {
   .wrap { max-width: var(--maxw); margin-inline: auto; padding-inline: clamp(1rem, 4vw, 24px); }
+
+  /* Hub pages (index.vue/about.vue) link styles. These resolve against whichever page's local
+     --hub-accent/--hub-muted are in scope via plain CSS inheritance - no duplication needed per
+     page. Two distinct roles used throughout the hub pages: */
+  .hub-link { color: var(--hub-accent); text-decoration: none; }
+  .hub-link:hover { text-decoration: underline; }
+  .hub-link-muted { color: var(--hub-muted); text-decoration: none; }
+  .hub-link-muted:hover { color: var(--hub-accent); }
+
+  /* Shared pill chrome (shape + tint background) - usage sites layer their own text/border
+     utilities on top (about.vue's tool pills add a border + mono font, index.vue's badges don't). */
+  .hub-pill { display: inline-block; border-radius: var(--r-pill, 999px); background: var(--hub-accent-tint); padding-inline: 9px; padding-block: 0.25rem; }
 }
 
 @layer utilities {
