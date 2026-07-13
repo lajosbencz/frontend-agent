@@ -20,24 +20,28 @@ const demos = [
 
       <p class="mt-[22px] text-[14px] leading-[1.5] text-[var(--hub-text-2)]">
         <a class="hub-link" href="https://huggingface.co/LiquidAI/LFM2.5-230M" target="_blank">LFM2.5 - 230M</a>
-        is truly impressive for it's footprint, and the technical background to deliver and run a model embedded in a browser is
+        is truly impressive for it's footprint, and the technical background to deliver and run it embedded in a browser is
         <a class="hub-link" href="https://github.com/ngxson/wllama" target="_blank">trivial</a>.
-        It picked up on training patterns in ~20M tokens, and easily manages structured tool calls.
+        The model picked up on training patterns in ~20M tokens, and easily manages structured tool calls.
         <br/><br/>
         <strong>But...</strong>
         <br/>
-        Using a 230M parameter model for diverse domains is not feasible.
+        230M parameters for diverse domains is not enough.
         During training, the imprinting of different, generalized uses-cases compete for attention.
         The fidelity of interaction is also lacking, and for multi-turn conversations it tends to follow the trainined<!-- sic. --> structure, instead of the actual context.
-        <br/>
-        Stay tuned for an eval on
-        <a class="hub-link" href="https://huggingface.co/LiquidAI/LFM2.5-350M" target="_blank">350M</a>
-        at 1.5x the footprint.
       </p>
 
       <section class="mt-[34px]">
-        <h2 class="mb-2 text-[16px] font-semibold tracking-[-0.02em] text-[var(--hub-text)]">So why?</h2>
+        <h2 class="mb-2 text-[16px] font-semibold tracking-[-0.02em] text-[var(--hub-text)]">Forecast: Sunny</h2>
         <p class="text-[13px] leading-[1.5] text-[var(--hub-text-2)]">
+          There are no cloud servers doing inference.
+        </p>
+        <p class="mt-2 text-[13px] leading-[1.5] text-[var(--hub-text-2)]">
+          The model loads once and streams tokens right in
+          your browser - WebGPU if available, otherwise CPU/WASM via
+          <a class="hub-link" href="https://github.com/ngxson/wllama" target="_blank">wllama</a>. 
+        </p>
+        <p class="mt-2 text-[13px] leading-[1.5] text-[var(--hub-text-2)]">
           Besides the cool factor, running an on-device agent can be useful for:
           <ul class="list-disc ml-3 mt-1 text-[12px]">
             <li>offline usage</li>
@@ -69,19 +73,16 @@ const demos = [
           The live catalog and knowledge is injected as context, so replies stay grounded.
           Tools provide additional interactivity and context retrieval.
         </p>
-      </section>
-
-      <section class="mt-[34px]">
-        <h2 class="mb-2 text-[16px] font-semibold tracking-[-0.02em] text-[var(--hub-text)]">Forecast: Sunny</h2>
-        <p class="text-[13px] leading-[1.5] text-[var(--hub-text-2)]">
-          There are no cloud servers doing inference. The model loads once and streams tokens right in
-          your browser - WebGPU when your machine offers it, otherwise CPU/WASM via
-          <span class="font-[ui-monospace,monospace] text-[0.92em]">wllama</span>. 
-        </p>
         <p class="mt-2 text-[13px] leading-[1.5] text-[var(--hub-text-2)]">
           Voice input and voice replies are on-device models too
-          (Whisper for speech-to-text, a small VITS model for text-to-speech) - nothing is sent
-          anywhere for either.
+          (<a class="hub-link" href="https://github.com/openai/whisper" target="_blank">Whisper</a> for speech-to-text,
+          a small <a class="hub-link" href="https://huggingface.co/Xenova/mms-tts-eng" target="_blank">VITS model</a> for text-to-speech)
+          - nothing is sent anywhere for either.
+        </p>
+        <p class="mt-2 text-[13px] leading-[1.5] text-[var(--hub-text-2)]">
+          Stay tuned for an eval on
+          <a class="hub-link" href="https://huggingface.co/LiquidAI/LFM2.5-350M" target="_blank">350M</a>
+          at 1.5x the footprint.
         </p>
       </section>
 
