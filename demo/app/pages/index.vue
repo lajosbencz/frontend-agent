@@ -133,7 +133,7 @@ const demos = [
     --hub-border-hover: #34343e;
     --hub-text: #f1f1f4;
     --hub-muted: #a4a5b0;
-    --hub-accent: #7f97ff;
+    --hub-accent: #335ccc;
     --hub-accent-tint: #191c30;
   }
 }
