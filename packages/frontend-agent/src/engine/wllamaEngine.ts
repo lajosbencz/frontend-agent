@@ -38,11 +38,36 @@ const DEFAULT_MODEL: Required<HFModelRef> = {
   quant: 'Q6_K',
 }
 
-/** Resolve a HF model ref to its `resolve/main` GGUF URL: `{basename}-{version}-{quant}.gguf`. */
+/** Fill in any missing fields of a model ref from the library default. */
+export function resolveModelRef(ref: HFModelRef = {}): Required<HFModelRef> {
+  return { ...DEFAULT_MODEL, ...ref }
+}
+
+/** Resolve a HF model ref to its GGUF URL: `resolve/{version}/{basename}-{quant}.gguf`. */
 export function resolveModelUrl(ref: HFModelRef = {}): string {
-  const { repo, version, quant } = { ...DEFAULT_MODEL, ...ref }
+  const { repo, version, quant } = resolveModelRef(ref)
   const basename = repo.split('/').pop() ?? repo
   return `https://huggingface.co/${repo}/resolve/${version}/${basename}-${quant}.gguf`
+}
+
+export interface ModelFileMeta {
+  /** Content hash from the response ETag (sha256 for HF's LFS/Xet-backed files), quotes stripped. */
+  sha256: string | null
+  bytes: number | null
+}
+
+/**
+ * HEAD-fetch the resolved GGUF URL for its content hash and size, without downloading the file.
+ * For a floating ref like `version: 'main'`, this is how you tell which exact build you actually
+ * got - the hash is the file's real identity, independent of what the ref currently points to.
+ */
+export async function fetchModelMeta(url: string): Promise<ModelFileMeta> {
+  const res = await fetch(url, { method: 'HEAD' })
+  const etag = res.headers.get('etag')
+  return {
+    sha256: etag ? etag.replace(/^"|"$/g, '') : null,
+    bytes: Number(res.headers.get('content-length')) || null,
+  }
 }
 
 async function detectWebGPU(): Promise<boolean> {

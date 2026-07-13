@@ -3,7 +3,14 @@
 
 import wllamaWasmUrl from '@wllama/wllama/esm/wasm/wllama.wasm?url'
 import { CacheManager } from '@wllama/wllama'
-import { WllamaEngine, resolveModelUrl, type EngineStatus, type HFModelRef } from 'frontend-agent'
+import {
+  WllamaEngine,
+  resolveModelUrl,
+  resolveModelRef,
+  fetchModelMeta,
+  type EngineStatus,
+  type HFModelRef,
+} from 'frontend-agent'
 
 export interface EngineCallbacks {
   onStatus?: (status: EngineStatus) => void
@@ -70,6 +77,19 @@ export async function isModelCached(): Promise<boolean> {
 export async function clearModelCache(): Promise<void> {
   const cache = new CacheManager()
   await cache.delete(resolveModelUrl(getModelRef()))
+}
+
+/** Configured repo/version/quant, the actual served file's hash/size (a cheap HEAD, no download -
+ *  the hash is what actually answers "which build did I get" for a floating ref like `main`), and
+ *  the size actually sitting in the OPFS cache right now, if any. */
+export async function getModelInfo() {
+  const ref = getModelRef()
+  const resolved = resolveModelRef(ref)
+  const url = resolveModelUrl(ref)
+  const cache = new CacheManager()
+  const name = await cache.getNameFromURL(url)
+  const [meta, diskSize] = await Promise.all([fetchModelMeta(url), cache.getSize(name)])
+  return { ...resolved, url, ...meta, diskBytes: diskSize >= 0 ? diskSize : null }
 }
 
 /** Tear down and reload the engine (e.g. on a backend switch). OPFS-cached, so no re-download. */

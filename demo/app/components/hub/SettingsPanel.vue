@@ -2,11 +2,13 @@
 import { useSpeechInput } from '~/composables/useSpeechInput'
 import { useSpeechOutput } from '~/composables/useSpeechOutput'
 import { useModelPreload } from '~/composables/useModelPreload'
+import { useModelInfo } from '~/composables/useModelInfo'
 import { useBackend } from '~/composables/useBackend'
 
 const speech = useSpeechInput()
 const voice = useSpeechOutput()
 const preload = useModelPreload()
+const modelInfo = useModelInfo()
 const backend = useBackend()
 
 function toggleGpu() {
@@ -14,7 +16,15 @@ function toggleGpu() {
   backend.toggle()
 }
 
-onMounted(() => preload.checkCached())
+function formatBytes(bytes: number): string {
+  const mb = bytes / (1024 * 1024)
+  return mb >= 1024 ? `${(mb / 1024).toFixed(2)} GB` : `${mb.toFixed(1)} MB`
+}
+
+onMounted(() => {
+  preload.checkCached()
+  modelInfo.check()
+})
 
 const preloadDisabled = computed(() => preload.status.value === 'downloading' || preload.status.value === 'ready')
 
@@ -54,9 +64,15 @@ onMounted(() => {
   })
 })
 
+async function onPreload() {
+  await preload.preload()
+  await modelInfo.refresh()
+}
+
 async function onClearCache() {
   closeMenu()
   await preload.clearCache()
+  await modelInfo.refresh()
 }
 
 async function onUnload() {
@@ -98,7 +114,7 @@ async function onUnload() {
             ? 'border-[var(--hub-border)] bg-[var(--hub-surface)] text-[var(--hub-muted)]'
             : 'cursor-pointer border-[var(--hub-accent)] bg-[var(--hub-accent)] text-white hover:opacity-90'"
           :disabled="preloadDisabled"
-          @click="preload.preload"
+          @click="onPreload"
         >{{ preloadLabel }}<span v-if="preload.status.value === 'ready'" class="text-success"> ✓</span></button>
         <button
           type="button"
@@ -133,6 +149,19 @@ async function onUnload() {
         </div>
       </div>
       <p v-if="preload.errorMessage.value" class="m-0 text-[11px] text-error">{{ preload.errorMessage.value }}</p>
+      <p v-if="modelInfo.info.value" class="m-0 font-mono text-[10px] leading-[1.5] text-[var(--hub-muted)]">
+        Version: {{ modelInfo.info.value.version }}
+        <br/>
+        Quantization: {{ modelInfo.info.value.quant }}
+        <br/>
+        <span v-if="modelInfo.info.value.sha256" :title="modelInfo.info.value.sha256">
+          Xet hash: {{ modelInfo.info.value.sha256.slice(0, 12) }}...
+        </span>
+        <span v-else>Hash unavailable</span>
+        <br/>
+        <span v-if="modelInfo.info.value.diskBytes !== null">On disk: {{ formatBytes(modelInfo.info.value.diskBytes) }}</span>
+        <span v-else>Not downloaded</span>
+      </p>
     </div>
   </div>
 </template>

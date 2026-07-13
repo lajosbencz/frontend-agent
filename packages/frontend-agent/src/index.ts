@@ -3,8 +3,8 @@
 export { createAgent } from './loop/agent'
 export type { Session, AgentConfig, AgentEvent, ToolCall, SubmitOptions } from './loop/agent'
 
-export { WllamaEngine, resolveModelUrl } from './engine/wllamaEngine'
-export type { WllamaEngineConfig, HFModelRef, EngineStatus } from './engine/wllamaEngine'
+export { WllamaEngine, resolveModelUrl, resolveModelRef, fetchModelMeta } from './engine/wllamaEngine'
+export type { WllamaEngineConfig, HFModelRef, EngineStatus, ModelFileMeta } from './engine/wllamaEngine'
 export { StubEngine } from './engine/stubEngine'
 export type { AgentEngine, ChatMessage, EngineGenerateResult } from './engine/types'
 
