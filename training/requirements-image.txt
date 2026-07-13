@@ -1,0 +1,9 @@
+# Repo deps NOT baked into the lfm-train CUDA image (it ships only the heavy ML stack:
+# torch / transformers / trl / peft / bitsandbytes / datasets / huggingface-hub). These are the
+# pure-python bits our scripts add on top; installed at container bootstrap via scripts/bootstrap.sh.
+# The base image stays lean — we install our own needs. Pinned versions live in uv.lock (host runs).
+pydantic-settings   # train.py config surface
+openai              # teacher client (OpenAI-compatible: OpenRouter / Ollama)
+instructor          # schema-validated teacher outputs
+diskcache           # teacher response cache
+python-frontmatter  # eval markdown-KB adapter

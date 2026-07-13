@@ -39,6 +39,9 @@ export default defineNuxtConfig({
       modelVersion: '',
       // NUXT_PUBLIC_MODEL_QUANT: Q6_K
       modelQuant: '',
+      // NUXT_PUBLIC_MODEL_URL: full GGUF URL (local or remote) - overrides repo/version/quant.
+      // e.g. /models/my-model-Q6_K.gguf (served from public/) or https://host/model.gguf
+      modelUrl: '',
     },
   },
 

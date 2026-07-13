@@ -1,0 +1,427 @@
+{
+  "model": "LiquidAI/LFM2.5-230M",
+  "n_per_kind": 5,
+  "backend": 99,
+  "quants": {
+    "350m-Q8_0": {
+      "file": "lfm2.5-350m-mt10m-Q8_0.gguf",
+      "size_mb": 379.2,
+      "overall": {
+        "arg_binding": [
+          367,
+          372
+        ],
+        "boundary": [
+          28,
+          28
+        ],
+        "cart_preserved": [
+          17,
+          20
+        ],
+        "comparison": [
+          13,
+          16
+        ],
+        "compound_both": [
+          12,
+          20
+        ],
+        "facet_in_stock": [
+          3,
+          16
+        ],
+        "facet_sort": [
+          16,
+          16
+        ],
+        "form_grounded": [
+          20,
+          20
+        ],
+        "id_grounded": [
+          46,
+          60
+        ],
+        "listing": [
+          15,
+          16
+        ],
+        "navigate": [
+          20,
+          20
+        ],
+        "no_unsolicited_add": [
+          20,
+          20
+        ],
+        "param_search": [
+          16,
+          16
+        ],
+        "policy_deny": [
+          0,
+          20
+        ],
+        "rag_faithful": [
+          16,
+          24
+        ],
+        "reference_track": [
+          14,
+          16
+        ],
+        "refusal": [
+          65,
+          72
+        ],
+        "search_before_add": [
+          17,
+          20
+        ],
+        "tool_selection": [
+          182,
+          184
+        ],
+        "total_correct": [
+          15,
+          20
+        ]
+      },
+      "score": 0.9056,
+      "core_score": 0.934,
+      "future_score": 0.75,
+      "high_bar_score": 0.0,
+      "by_target": {
+        "videogames/canonical": {
+          "arg_binding": [
+            100,
+            101
+          ],
+          "tool_selection": [
+            51,
+            51
+          ],
+          "rag_faithful": [
+            4,
+            6
+          ],
+          "id_grounded": [
+            9,
+            15
+          ],
+          "reference_track": [
+            4,
+            5
+          ],
+          "refusal": [
+            17,
+            20
+          ],
+          "policy_deny": [
+            0,
+            5
+          ],
+          "no_unsolicited_add": [
+            5,
+            5
+          ],
+          "compound_both": [
+            2,
+            5
+          ],
+          "search_before_add": [
+            4,
+            5
+          ],
+          "total_correct": [
+            4,
+            5
+          ],
+          "navigate": [
+            5,
+            5
+          ],
+          "cart_preserved": [
+            3,
+            5
+          ],
+          "boundary": [
+            7,
+            7
+          ],
+          "listing": [
+            5,
+            5
+          ],
+          "param_search": [
+            5,
+            5
+          ],
+          "comparison": [
+            4,
+            5
+          ],
+          "form_grounded": [
+            5,
+            5
+          ],
+          "facet_in_stock": [
+            2,
+            5
+          ],
+          "facet_sort": [
+            5,
+            5
+          ]
+        },
+        "videogames/aliased": {
+          "arg_binding": [
+            100,
+            101
+          ],
+          "tool_selection": [
+            49,
+            51
+          ],
+          "rag_faithful": [
+            3,
+            6
+          ],
+          "id_grounded": [
+            14,
+            15
+          ],
+          "reference_track": [
+            4,
+            5
+          ],
+          "refusal": [
+            18,
+            20
+          ],
+          "policy_deny": [
+            0,
+            5
+          ],
+          "no_unsolicited_add": [
+            5,
+            5
+          ],
+          "compound_both": [
+            5,
+            5
+          ],
+          "search_before_add": [
+            5,
+            5
+          ],
+          "total_correct": [
+            3,
+            5
+          ],
+          "navigate": [
+            5,
+            5
+          ],
+          "cart_preserved": [
+            5,
+            5
+          ],
+          "boundary": [
+            7,
+            7
+          ],
+          "listing": [
+            4,
+            5
+          ],
+          "param_search": [
+            5,
+            5
+          ],
+          "comparison": [
+            3,
+            5
+          ],
+          "form_grounded": [
+            5,
+            5
+          ],
+          "facet_in_stock": [
+            1,
+            5
+          ],
+          "facet_sort": [
+            5,
+            5
+          ]
+        },
+        "brewcraft/canonical": {
+          "arg_binding": [
+            82,
+            85
+          ],
+          "tool_selection": [
+            41,
+            41
+          ],
+          "rag_faithful": [
+            6,
+            6
+          ],
+          "id_grounded": [
+            10,
+            15
+          ],
+          "reference_track": [
+            3,
+            3
+          ],
+          "refusal": [
+            15,
+            16
+          ],
+          "policy_deny": [
+            0,
+            5
+          ],
+          "no_unsolicited_add": [
+            5,
+            5
+          ],
+          "compound_both": [
+            1,
+            5
+          ],
+          "search_before_add": [
+            3,
+            5
+          ],
+          "total_correct": [
+            4,
+            5
+          ],
+          "navigate": [
+            5,
+            5
+          ],
+          "cart_preserved": [
+            4,
+            5
+          ],
+          "boundary": [
+            7,
+            7
+          ],
+          "listing": [
+            3,
+            3
+          ],
+          "param_search": [
+            3,
+            3
+          ],
+          "comparison": [
+            3,
+            3
+          ],
+          "form_grounded": [
+            5,
+            5
+          ],
+          "facet_in_stock": [
+            0,
+            3
+          ],
+          "facet_sort": [
+            3,
+            3
+          ]
+        },
+        "brewcraft/aliased": {
+          "arg_binding": [
+            85,
+            85
+          ],
+          "tool_selection": [
+            41,
+            41
+          ],
+          "rag_faithful": [
+            3,
+            6
+          ],
+          "id_grounded": [
+            13,
+            15
+          ],
+          "reference_track": [
+            3,
+            3
+          ],
+          "refusal": [
+            15,
+            16
+          ],
+          "policy_deny": [
+            0,
+            5
+          ],
+          "no_unsolicited_add": [
+            5,
+            5
+          ],
+          "compound_both": [
+            4,
+            5
+          ],
+          "search_before_add": [
+            5,
+            5
+          ],
+          "total_correct": [
+            4,
+            5
+          ],
+          "navigate": [
+            5,
+            5
+          ],
+          "cart_preserved": [
+            5,
+            5
+          ],
+          "boundary": [
+            7,
+            7
+          ],
+          "listing": [
+            3,
+            3
+          ],
+          "param_search": [
+            3,
+            3
+          ],
+          "comparison": [
+            3,
+            3
+          ],
+          "form_grounded": [
+            5,
+            5
+          ],
+          "facet_in_stock": [
+            0,
+            3
+          ],
+          "facet_sort": [
+            3,
+            3
+          ]
+        }
+      }
+    }
+  }
+}

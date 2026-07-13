@@ -1,0 +1,31 @@
+# Local demo behind the shared Traefik (podman). The built Nitro node-server is routed by
+# PathPrefix(`/demo`) on the websecure (https:8443) entrypoint with Traefik's self-signed cert, so
+# the page is a SECURE CONTEXT -> SharedArrayBuffer available -> wllama runs multi-threaded. The app
+# is built with baseURL=/demo/ (Nitro serves under that prefix; no StripPrefix needed) and ships the
+# 350M Q6 GGUF in .output/public/models (gitignored). Rebuild with:
+#   NITRO_PRESET=node-server NUXT_APP_BASE_URL=/demo/ \
+#   NUXT_PUBLIC_MODEL_URL=/demo/models/lfm2.5-350m-frontend-agent-Q6_K.gguf npm run build
+services:
+  demo:
+    image: docker.io/library/node:22-slim
+    container_name: frontend-agent-demo
+    restart: unless-stopped
+    working_dir: /app
+    command: ["node", ".output/server/index.mjs"]
+    volumes:
+      - ./.output:/app/.output:ro
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3000
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.demo.rule=PathPrefix(`/demo`)
+      - traefik.http.routers.demo.entrypoints=websecure
+      - traefik.http.routers.demo.tls=true
+      - traefik.http.services.demo.loadbalancer.server.port=3000
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true

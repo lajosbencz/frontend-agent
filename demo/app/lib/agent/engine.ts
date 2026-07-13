@@ -40,9 +40,23 @@ function getModelRef(): HFModelRef {
   return ref
 }
 
+/** A direct GGUF URL (local or remote) if configured, else empty. Overrides the HF ref. */
+function getModelUrlOverride(): string {
+  return useRuntimeConfig().public.modelUrl || ''
+}
+
+/** The GGUF URL that will actually be loaded/cached - a direct `modelUrl` if set, else the resolved
+ *  HF ref. Everything (load, cache check/clear, info) goes through this so they always agree. */
+function getModelUrl(): string {
+  return getModelUrlOverride() || resolveModelUrl(getModelRef())
+}
+
 function buildEngine(cb: EngineCallbacks): Promise<WllamaEngine> {
+  const modelUrl = getModelUrlOverride()
   const engine = new WllamaEngine({
-    model: getModelRef(),
+    // `modelUrl` (any local/remote URL) wins; otherwise load from the HF ref. The library treats
+    // `modelUrl` as an override of `model`, so passing both would also work - we pass one for clarity.
+    ...(modelUrl ? { modelUrl } : { model: getModelRef() }),
     wllamaAssets: { default: wllamaWasmUrl },
     backend: backendPref,
     onStatus: (s) => cb.onStatus?.(s),
@@ -69,27 +83,34 @@ export function getEngine(cb: EngineCallbacks = {}): Promise<WllamaEngine> {
 /** Whether the configured model's GGUF is already in the OPFS cache - no network fetch needed to load it. */
 export async function isModelCached(): Promise<boolean> {
   const cache = new CacheManager()
-  const name = await cache.getNameFromURL(resolveModelUrl(getModelRef()))
+  const name = await cache.getNameFromURL(getModelUrl())
   return (await cache.getSize(name)) >= 0
 }
 
 /** Delete the configured model's GGUF from the OPFS cache. Does not touch an already-loaded engine. */
 export async function clearModelCache(): Promise<void> {
   const cache = new CacheManager()
-  await cache.delete(resolveModelUrl(getModelRef()))
+  await cache.delete(getModelUrl())
 }
 
 /** Configured repo/version/quant, the actual served file's hash/size (a cheap HEAD, no download -
  *  the hash is what actually answers "which build did I get" for a floating ref like `main`), and
  *  the size actually sitting in the OPFS cache right now, if any. */
+/** Best-effort repo/quant labels from a direct GGUF filename (`…-Q6_K.gguf`) for the settings panel. */
+function describeModelUrl(url: string): { repo: string; version: string; quant: string } {
+  const file = url.split('/').pop()?.replace(/\.gguf$/i, '') ?? url
+  const m = file.match(/^(.*)-(Q\d[\w]*|F16|BF16)$/i)
+  return { repo: m ? m[1] : file, version: 'custom', quant: m ? m[2] : '' }
+}
+
 export async function getModelInfo() {
-  const ref = getModelRef()
-  const resolved = resolveModelRef(ref)
-  const url = resolveModelUrl(ref)
+  const override = getModelUrlOverride()
+  const url = getModelUrl()
+  const display = override ? describeModelUrl(override) : resolveModelRef(getModelRef())
   const cache = new CacheManager()
   const name = await cache.getNameFromURL(url)
   const [meta, diskSize] = await Promise.all([fetchModelMeta(url), cache.getSize(name)])
-  return { ...resolved, url, ...meta, diskBytes: diskSize >= 0 ? diskSize : null }
+  return { ...display, url, ...meta, diskBytes: diskSize >= 0 ? diskSize : null }
 }
 
 /** Tear down and reload the engine (e.g. on a backend switch). OPFS-cached, so no re-download. */

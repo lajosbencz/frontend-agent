@@ -1,0 +1,13 @@
+# Champion recipe: full fp32 fine-tune of LFM2.5-230M on a 16GB card (the v1.0.0 setup).
+# Fits without grad-checkpointing at batch 2 / grad-accum 8; paged_adamw_32bit is weight-identical
+# to adamw_torch but pages state to CPU on VRAM spikes. Set grad_checkpointing: true to trade ~20%
+# speed for more headroom on a tighter card.
+method: full
+dtype: fp32
+epochs: 1.3
+batch_size: 2
+grad_accum: 8
+eval_batch_size: 2
+max_len: 2560
+optim: paged_adamw_32bit
+grad_checkpointing: false
