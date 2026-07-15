@@ -9,7 +9,7 @@ tags:
   - localllm
   - webdev
   - machinelearning
-published: false
+published: true
 canonical_url: 'https://lajosbencz.github.io/frontend-agent/blog/frontend-agent-on-device/'
 draft: false
 ogImage: /assets/frontend-agent-vendor.png
