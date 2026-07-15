@@ -8,6 +8,7 @@ published: false
 canonical_url: https://lajosbencz.github.io/frontend-agent/blog/frontend-agent-on-device/
 draft: false
 ogImage: /assets/frontend-agent-vendor.png
+cover_image: https://lajosbencz.github.io/frontend-agent/blog/assets/frontend-agent-vendor.png
 ---
 
 **TL;DR**: I fine-tuned LiquidAI's LFM2.5 (230M and 350M) into a generic front-end agent that runs *entirely in the browser* - no server, no API key, no cloud costs.

@@ -1,0 +1,38 @@
+name: Syndicate blog to dev.to
+
+# Mirrors blog/content/*.md to dev.to AFTER the canonical page is live on GitHub Pages
+# (each post's canonical_url points back to Pages). Only changed posts are pushed; the action
+# writes the created article id back into the front matter and commits it, so re-runs are no-ops.
+#
+# Posts stay drafts on dev.to while `published: false`. Flip to `published: true` to go live.
+# Requires the DEVTO_TOKEN repo secret (dev.to API key). The id write-back uses GITHUB_TOKEN,
+# whose pushes do NOT re-trigger the Pages workflow (no publish loop).
+
+on:
+  workflow_run:
+    workflows: ["Deploy demo to GitHub Pages"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: devto
+  cancel-in-progress: false
+
+jobs:
+  syndicate:
+    # Only after a successful Pages deploy (or a manual dispatch).
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: master
+      - uses: sinedied/publish-devto@c713cc0934b35cb3df9fca759b98e36e6a540a85 # v2
+        with:
+          devto_key: ${{ secrets.DEVTO_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          files: 'blog/content/*.md'
+          branch: master
