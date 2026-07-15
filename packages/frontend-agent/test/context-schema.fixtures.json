@@ -1,0 +1,126 @@
+{
+  "context_schema_version": "1.0",
+  "note": "Golden fixtures for the C-block contract. Python (kbft.bounded.render_context) and the npm library MUST both reproduce `expected` byte-for-byte. Regenerate + bump version on change.",
+  "cases": [
+    {
+      "name": "none",
+      "input": {
+        "persona": "You are the shopping assistant for TestMart, a general store."
+      },
+      "expected": "You are the shopping assistant for TestMart, a general store."
+    },
+    {
+      "name": "cart_empty",
+      "input": {
+        "persona": "You are the shopping assistant for TestMart, a general store.",
+        "cart": []
+      },
+      "expected": "You are the shopping assistant for TestMart, a general store.\n\nCART: empty"
+    },
+    {
+      "name": "cart_only",
+      "input": {
+        "persona": "You are the shopping assistant for TestMart, a general store.",
+        "cart": [
+          {
+            "id": "sku-apple",
+            "title": "Apples",
+            "qty": 3
+          }
+        ]
+      },
+      "expected": "You are the shopping assistant for TestMart, a general store.\n\nCART: Apples [sku-apple] x3"
+    },
+    {
+      "name": "view_partial",
+      "input": {
+        "persona": "You are the shopping assistant for TestMart, a general store.",
+        "view": [
+          {
+            "id": "sku-milk",
+            "title": "Whole Milk 1L",
+            "price": "$2.50"
+          },
+          {
+            "id": "sku-egg",
+            "title": "Free-Range Eggs (12)",
+            "price": "$4.00"
+          }
+        ]
+      },
+      "expected": "You are the shopping assistant for TestMart, a general store.\n\nCURRENT VIEW (items shown to the customer):\n1. Whole Milk 1L [sku-milk] - $2.50\n2. Free-Range Eggs (12) [sku-egg] - $4.00"
+    },
+    {
+      "name": "view_full",
+      "input": {
+        "persona": "You are the shopping assistant for TestMart, a general store.",
+        "view": [
+          {
+            "id": "sku-milk",
+            "title": "Whole Milk 1L",
+            "price": "$2.50"
+          },
+          {
+            "id": "sku-egg",
+            "title": "Free-Range Eggs (12)",
+            "price": "$4.00"
+          },
+          {
+            "id": "sku-bread",
+            "title": "Sourdough Loaf",
+            "price": "$5.25"
+          }
+        ],
+        "cart": [
+          {
+            "id": "sku-milk",
+            "title": "Whole Milk 1L",
+            "qty": 1
+          }
+        ]
+      },
+      "expected": "You are the shopping assistant for TestMart, a general store.\n\nCURRENT VIEW (items shown to the customer):\n1. Whole Milk 1L [sku-milk] - $2.50\n2. Free-Range Eggs (12) [sku-egg] - $4.00\n3. Sourdough Loaf [sku-bread] - $5.25\n\nCART: Whole Milk 1L [sku-milk] x1"
+    },
+    {
+      "name": "bespoke",
+      "input": {
+        "persona": "You are the shopping assistant for TestMart, a general store.",
+        "view": [
+          {
+            "id": "sku-cheddar",
+            "title": "Aged Cheddar, Sharp [500g]",
+            "price": "$8.99"
+          },
+          {
+            "id": "sku-brie",
+            "title": "Double-Cream Brie",
+            "price": "$6.50"
+          }
+        ],
+        "cart": [
+          {
+            "id": "sku-cheddar",
+            "title": "Aged Cheddar, Sharp [500g]",
+            "qty": 2
+          },
+          {
+            "id": "sku-brie",
+            "title": "Double-Cream Brie",
+            "qty": 1
+          }
+        ],
+        "knowledge": [
+          {
+            "title": "Returns",
+            "text": "Perishables are final sale; non-perishables returnable within 14 days."
+          },
+          {
+            "title": "Delivery",
+            "text": "Same-day delivery on orders over $35."
+          }
+        ]
+      },
+      "expected": "You are the shopping assistant for TestMart, a general store.\n\nCURRENT VIEW (items shown to the customer):\n1. Aged Cheddar, Sharp [500g] [sku-cheddar] - $8.99\n2. Double-Cream Brie [sku-brie] - $6.50\n\nCART: Aged Cheddar, Sharp [500g] [sku-cheddar] x2; Double-Cream Brie [sku-brie] x1\n\nKNOWLEDGE:\n- Returns: Perishables are final sale; non-perishables returnable within 14 days.\n- Delivery: Same-day delivery on orders over $35."
+    }
+  ]
+}

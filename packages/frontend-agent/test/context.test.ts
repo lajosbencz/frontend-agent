@@ -11,7 +11,7 @@ import {
 // The C-block contract is shared with the Python trainer via golden fixtures. This asserts the TS
 // renderer reproduces them byte-for-byte and the version agrees; if it fails, the runtime and the
 // trained format have drifted (regenerate fixtures + bump CONTEXT_SCHEMA_VERSION on BOTH sides).
-const fixturesUrl = new URL('../../../docs/context-schema.fixtures.json', import.meta.url)
+const fixturesUrl = new URL('./context-schema.fixtures.json', import.meta.url)
 const fixtures = JSON.parse(readFileSync(fileURLToPath(fixturesUrl), 'utf8')) as {
   context_schema_version: string
   cases: { name: string; input: ContextInput; expected: string }[]

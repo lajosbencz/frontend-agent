@@ -1,5 +1,5 @@
 // Canonical C-block renderer. MUST reproduce the Python render_context (kbft/bounded.py)
-// byte-for-byte; both pinned to docs/context-schema.fixtures.json.
+// byte-for-byte; both pinned to test/context-schema.fixtures.json.
 
 /** Bump in lockstep with the Python side + fixtures when the format changes. */
 export const CONTEXT_SCHEMA_VERSION = '1.0'
