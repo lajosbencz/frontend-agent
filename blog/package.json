@@ -1,0 +1,14 @@
+{
+  "name": "blog",
+  "private": true,
+  "type": "module",
+  "description": "Standalone static blog (Eleventy). Deployed to GitHub Pages under /frontend-agent/blog. Separate from the demo.",
+  "scripts": {
+    "build": "eleventy",
+    "serve": "eleventy --serve",
+    "drafts": "DRAFTS=1 eleventy --serve"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "^3.0.0"
+  }
+}

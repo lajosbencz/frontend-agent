@@ -35,6 +35,12 @@ jobs:
       - run: npm run generate -w demo
         env:
           NUXT_APP_BASE_URL: /${{ github.event.repository.name }}/
+      # Standalone blog
+      - run: npm install --no-audit --no-fund
+        working-directory: blog
+      - run: npm run build
+        working-directory: blog
+      - run: cp -r blog/dist demo/.output/public/blog
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: demo/.output/public

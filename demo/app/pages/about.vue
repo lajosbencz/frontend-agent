@@ -80,9 +80,9 @@ const demos = [
           - nothing is sent anywhere for either.
         </p>
         <p class="mt-2 text-[13px] leading-[1.5] text-[var(--hub-text-2)]">
-          Stay tuned for an eval on
+          Want more headroom? A
           <a class="hub-link" href="https://huggingface.co/LiquidAI/LFM2.5-350M" target="_blank">350M</a>
-          at 1.5x the footprint.
+          variant is available too, at ~1.5x the footprint - pick it from the model menu.
         </p>
       </section>
 
