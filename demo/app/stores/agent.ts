@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { perDomainStore } from './perDomain'
 
 export type AgentStatus =
   | 'idle'
@@ -27,12 +28,8 @@ export interface TranscriptEntry {
   tools?: ToolCallRecord[]
 }
 
-const stores = new Map<string, ReturnType<typeof defineAgentStore>>()
-
-// UI state only. The model-format conversation lives inside the library Session (runtime.ts);
-// this store just drives the panel: transcript, load status, download progress. GPU/CPU backend
-// state lives in useBackend (shared across domains). One instance per domain (brewcraft/emporium/
-// vendor), so conversations never mix across demos.
+// UI state only - the model-format conversation lives inside the library Session. This store drives
+// the panel: transcript, load status, download progress. GPU/CPU backend state lives in useBackend.
 function defineAgentStore(domain: string) {
   return defineStore(`agent:${domain}`, {
     state: () => ({
@@ -70,11 +67,4 @@ function defineAgentStore(domain: string) {
   })
 }
 
-export function useAgentStore(domain: string) {
-  let define = stores.get(domain)
-  if (!define) {
-    define = defineAgentStore(domain)
-    stores.set(domain, define)
-  }
-  return define()
-}
+export const useAgentStore = perDomainStore(defineAgentStore)

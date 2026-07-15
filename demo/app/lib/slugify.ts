@@ -1,4 +1,4 @@
-const DIACRITICS = /[̀-ͯ]/g
+const DIACRITICS = /[\u0300-\u036f]/g
 
 export function slugify(s: string): string {
   return s

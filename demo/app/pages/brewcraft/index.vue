@@ -1,14 +1,24 @@
 <script setup lang="ts">
+import type { ProductCardItem } from '~/lib/shop'
+
 definePageMeta({ layout: 'domain', domain: 'brewcraft' })
 const featuredSlugs = ['duo-machine', 'precision-grinder', 'milk-pitcher', 'tamper-58mm']
 const { data: products } = await useAsyncData('home-featured', () =>
   queryCollection('products').all(),
 )
-const featured = computed(() =>
+const featured = computed<ProductCardItem[]>(() =>
   featuredSlugs
     .map((s) => (products.value ?? []).find((p) => p.slug === s))
-    .filter(Boolean)
-    .map((p) => ({ ...p!, path: `/brewcraft${p!.path}` })),
+    .filter((p): p is NonNullable<typeof p> => p != null)
+    .map((p) => ({
+      path: `/brewcraft${p.path}`,
+      slug: p.slug,
+      title: p.title,
+      price: p.price,
+      summary: p.summary,
+      category: p.category,
+      inStock: p.inStock,
+    })),
 )
 
 const homeDocSlugs = ['getting-started', 'dialing-in', 'milk-steaming']
@@ -29,10 +39,10 @@ const categories = [
 ]
 
 const tools = [
-  { name: 'search_products', args: 'query, category' },
-  { name: 'add_to_cart', args: 'slug, quantity' },
-  { name: 'search_docs', args: 'query' },
-  { name: 'navigate_to', args: 'path' },
+  { name: 'list_items', args: 'query, filters' },
+  { name: 'add_to_cart', args: 'id, quantity' },
+  { name: 'search_knowledge', args: 'query' },
+  { name: 'navigate', args: 'target, id' },
 ]
 </script>
 
@@ -62,8 +72,8 @@ const tools = [
         </div>
         <div class="flex flex-col gap-[11px] px-1 pt-3.5 pb-1.5">
           <div class="max-w-[82%] self-end rounded-[13px_13px_3px_13px] bg-dark px-[13px] py-2.5 text-[12px] leading-[1.4] text-white">Find a grinder under $300 and add it to my cart</div>
-          <div class="inline-flex items-center gap-2 self-start rounded-sm border border-border bg-surface-3 px-2.5 py-1.5 font-mono text-[11px] font-medium text-text-2"><span class="text-accent">→</span> search_products<span class="text-text-faint">{ category:"grinders", max:300 }</span></div>
-          <div class="inline-flex items-center gap-2 self-start rounded-sm border border-border bg-surface-3 px-2.5 py-1.5 font-mono text-[11px] font-medium text-text-2"><span class="text-success">✓</span> add_to_cart<span class="text-text-faint">{ slug:"compact-grinder" }</span></div>
+          <div class="inline-flex items-center gap-2 self-start rounded-sm border border-border bg-surface-3 px-2.5 py-1.5 font-mono text-[11px] font-medium text-text-2"><span class="text-accent">→</span> list_items<span class="text-text-faint">{ query:"grinder", max_price:300 }</span></div>
+          <div class="inline-flex items-center gap-2 self-start rounded-sm border border-border bg-surface-3 px-2.5 py-1.5 font-mono text-[11px] font-medium text-text-2"><span class="text-success">✓</span> add_to_cart<span class="text-text-faint">{ id:"compact-grinder" }</span></div>
           <div class="max-w-[86%] self-start rounded-[13px_13px_13px_3px] bg-surface-2 px-[13px] py-2.5 text-[12px] leading-[1.4] text-[#3a352e]">Added the <b class="font-semibold">Compact Grinder ($219)</b>. It pairs with any BrewCraft machine - want a tamper too?</div>
         </div>
       </div>
@@ -90,7 +100,7 @@ const tools = [
         <NuxtLink to="/brewcraft/shop" class="font-body text-[12px] font-medium text-accent no-underline">View all →</NuxtLink>
       </div>
       <div class="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-4">
-        <ShopProductCard v-for="p in featured" :key="p!.path" domain="brewcraft" :product="p as any" />
+        <ShopProductCard v-for="p in featured" :key="p.path" domain="brewcraft" :product="p" />
       </div>
     </section>
 

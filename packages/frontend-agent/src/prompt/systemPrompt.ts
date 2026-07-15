@@ -12,12 +12,8 @@ export interface SystemPromptConfig {
   hintLabel?: string
 }
 
-/**
- * Reproduce the exact v1.0.0 system message the model was trained on:
- *   `{persona}\n\n{hintLabel}: {hint}\nList of tools: [{fn-json}, ...]`
- * The tool list uses Python `json.dumps` separators (`pyJson`) for byte-for-byte train/inference
- * parity. The full system text is baked here (pass NO `tools` array to the engine's chat template).
- */
+/** Reproduce the trained system message: `{persona}\n\n{hintLabel}: {hint}\nList of tools: [...]`,
+ *  tool list rendered with `pyJson` for train/inference parity. Pass NO `tools` array to the engine. */
 export async function buildSystemPrompt(cfg: SystemPromptConfig): Promise<string> {
   const label = cfg.hintLabel ?? 'Example catalog items'
   const hint =

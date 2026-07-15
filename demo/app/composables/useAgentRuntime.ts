@@ -3,8 +3,8 @@ import { getEngine } from '~/lib/agent/engine'
 import { useBackend, type BackendPref } from '~/composables/useBackend'
 import { domainSessions, type DomainKey } from '~/lib/agent/domains'
 
-// Thin Nuxt/Pinia wrapper over the shared library engine + a domain's Session. Owns the activation
-// UX (download/progress); GPU/CPU preference lives in useBackend, shared across every consumer.
+// Owns the activation UX (download/progress) for a domain's Session; GPU/CPU preference lives in
+// useBackend.
 
 export function useAgentRuntime(domain: DomainKey) {
   const agent = useAgentStore(domain)

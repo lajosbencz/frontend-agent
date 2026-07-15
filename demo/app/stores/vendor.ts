@@ -15,11 +15,9 @@ export interface Receipt {
   total: number
 }
 
-// The Vendor's own grocery inventory (see data/vendor-groceries.ts) - sold in-character over
-// conversation only, no cart page. `basket` drives the counter animation; `receipt` is a snapshot
-// taken by the agent's `pay` tool, shown as a mock transaction modal. `clear` (the trained
-// clear_cart tool) just empties the counter with no sale/receipt - a distinct action from paying.
-// Items stay on the shelf regardless of sales (a demo, not a real stock system).
+// Sold in-character over conversation only, no cart page. `basket` drives the counter animation;
+// `receipt` is a snapshot taken by `pay` for the mock transaction modal. Items stay on the shelf
+// regardless of sales (a demo, not a real stock system).
 export const useVendorStore = defineStore('vendor', {
   state: () => ({
     basket: [] as BasketEntry[],

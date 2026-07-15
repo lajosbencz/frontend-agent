@@ -3,12 +3,14 @@ import { useSpeechInput } from '~/composables/useSpeechInput'
 import { useSpeechOutput } from '~/composables/useSpeechOutput'
 import { useModelPreload } from '~/composables/useModelPreload'
 import { useModelInfo } from '~/composables/useModelInfo'
+import { useModelSwitcher } from '~/composables/useModelSwitcher'
 import { useBackend } from '~/composables/useBackend'
 
 const speech = useSpeechInput()
 const voice = useSpeechOutput()
 const preload = useModelPreload()
 const modelInfo = useModelInfo()
+const model = useModelSwitcher()
 const backend = useBackend()
 
 function toggleGpu() {
@@ -16,18 +18,30 @@ function toggleGpu() {
   backend.toggle()
 }
 
+const gpuOn = computed(
+  () => (backend.backend.value ?? (backend.pref.value === 'cpu' ? 'cpu' : 'webgpu')) === 'webgpu',
+)
+
 function formatBytes(bytes: number): string {
   const mb = bytes / (1024 * 1024)
   return mb >= 1024 ? `${(mb / 1024).toFixed(2)} GB` : `${mb.toFixed(1)} MB`
 }
+
+// Placeholder-filled so the block keeps a constant height whether or not the async info has loaded.
+const info = computed(() => modelInfo.info.value)
+const hashText = computed(() => (info.value?.sha256 ? `${info.value.sha256.slice(0, 12)}...` : '-'))
+const diskText = computed(() =>
+  info.value?.diskBytes != null ? formatBytes(info.value.diskBytes) : 'not downloaded',
+)
 
 onMounted(() => {
   preload.checkCached()
   modelInfo.check()
 })
 
-const preloadDisabled = computed(() => preload.status.value === 'downloading' || preload.status.value === 'ready')
-
+const preloadDisabled = computed(
+  () => preload.status.value === 'downloading' || preload.status.value === 'ready',
+)
 const preloadLabel = computed(() => {
   if (preload.status.value === 'ready') return 'Model loaded'
   if (preload.status.value === 'downloading') {
@@ -39,8 +53,6 @@ const preloadLabel = computed(() => {
   return preload.cached.value ? 'Preload model (cached)' : 'Preload model'
 })
 
-// Split-button dropdown for the two destructive actions - only ever meaningful once there's a
-// cached file and/or a loaded engine, so the caret itself disables when neither applies.
 const menuOpen = ref(false)
 const menuRoot = ref<HTMLElement | null>(null)
 const menuDisabled = computed(() => !preload.cached.value && preload.status.value !== 'ready')
@@ -68,100 +80,124 @@ async function onPreload() {
   await preload.preload()
   await modelInfo.refresh()
 }
-
 async function onClearCache() {
   closeMenu()
   await preload.clearCache()
   await modelInfo.refresh()
 }
-
+async function onClearAllCache() {
+  closeMenu()
+  await preload.clearAllCaches()
+  await modelInfo.refresh()
+}
 async function onUnload() {
   closeMenu()
   await preload.unload()
 }
+async function onModelSwitched() {
+  await modelInfo.refresh()
+}
 </script>
 
 <template>
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-3">
     <h2 class="text-[11px] font-semibold tracking-wide text-[var(--hub-muted)] uppercase">Settings</h2>
 
-    <ClientOnly>
-      <div v-if="speech.supported" class="flex items-center justify-between gap-3">
-        <span class="text-[12.5px] text-[var(--hub-text)]">Voice input</span>
-        <UiToggleSwitch :model-value="speech.enabled.value" @update:model-value="speech.toggleEnabled" />
+    <div class="grid grid-cols-2 gap-x-6 gap-y-3">
+      <!-- Toggles -->
+      <div class="flex flex-col gap-3">
+        <div class="flex items-center justify-between gap-3">
+          <span class="text-[12.5px] text-[var(--hub-text)]">GPU acceleration</span>
+          <UiToggleSwitch
+            :model-value="gpuOn"
+            :disabled="backend.webgpuAvailable.value === false || backend.switching.value"
+            @update:model-value="toggleGpu"
+          />
+        </div>
+        <ClientOnly>
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-[12.5px] text-[var(--hub-text)]">Voice input</span>
+            <UiToggleSwitch
+              :model-value="speech.enabled.value"
+              :disabled="!speech.supported"
+              @update:model-value="speech.toggleEnabled"
+            />
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-[12.5px] text-[var(--hub-text)]">Spoken replies</span>
+            <UiToggleSwitch
+              :model-value="voice.enabled.value"
+              :disabled="!voice.supported"
+              @update:model-value="voice.toggleEnabled"
+            />
+          </div>
+          <template #fallback><div class="h-[56px]" /></template>
+        </ClientOnly>
       </div>
-      <div v-if="voice.supported" class="flex items-center justify-between gap-3">
-        <span class="text-[12.5px] text-[var(--hub-text)]">Spoken replies</span>
-        <UiToggleSwitch :model-value="voice.enabled.value" @update:model-value="voice.toggleEnabled" />
-      </div>
-    </ClientOnly>
 
-    <div class="flex items-center justify-between gap-3">
-      <span class="text-[12.5px] text-[var(--hub-text)]">GPU acceleration</span>
-      <UiToggleSwitch
-        :model-value="(backend.backend.value ?? (backend.pref.value === 'cpu' ? 'cpu' : 'webgpu')) === 'webgpu'"
-        :disabled="backend.webgpuAvailable.value === false || backend.switching.value"
-        @update:model-value="toggleGpu"
-      />
-    </div>
+      <!-- Model -->
+      <div class="flex flex-col gap-2">
+        <ClientOnly v-if="!model.selfHosted.value">
+          <UiModelSelectButton @switched="onModelSwitched" />
+          <template #fallback><div class="h-[52px]" /></template>
+        </ClientOnly>
 
-    <div class="flex flex-col gap-1.5">
-      <div ref="menuRoot" class="relative flex">
-        <button
-          type="button"
-          class="flex-1 rounded-l-md border px-3 py-2 font-mono text-[11px] font-medium transition-colors disabled:cursor-default"
-          :class="preloadDisabled
-            ? 'border-[var(--hub-border)] bg-[var(--hub-surface)] text-[var(--hub-muted)]'
-            : 'cursor-pointer border-[var(--hub-accent)] bg-[var(--hub-accent)] text-white hover:opacity-90'"
-          :disabled="preloadDisabled"
-          @click="onPreload"
-        >{{ preloadLabel }}<span v-if="preload.status.value === 'ready'" class="text-success"> ✓</span></button>
-        <button
-          type="button"
-          class="flex-none rounded-r-md border border-l-0 px-2 font-mono text-[11px] transition-colors disabled:cursor-default disabled:opacity-40"
-          :class="menuDisabled
-            ? 'border-[var(--hub-border)] bg-[var(--hub-surface)] text-[var(--hub-muted)]'
-            : 'cursor-pointer border-[var(--hub-border)] bg-[var(--hub-surface)] text-[var(--hub-text)] hover:border-[var(--hub-border-hover)]'"
-          :disabled="menuDisabled"
-          aria-label="Model actions"
-          :aria-expanded="menuOpen"
-          @click="menuOpen = !menuOpen"
-        >▾</button>
-
-        <div
-          v-if="menuOpen"
-          class="absolute top-[calc(100%+4px)] right-0 z-10 w-48 overflow-hidden rounded-md border border-[var(--hub-border)] bg-[var(--hub-surface)] py-1 shadow-modal"
-        >
+        <div ref="menuRoot" class="relative flex">
           <button
             type="button"
-            class="block w-full px-3 py-2 text-left text-[11px] text-[var(--hub-text)] disabled:cursor-default disabled:text-[var(--hub-muted)] disabled:opacity-50"
-            :class="{ 'cursor-pointer hover:bg-[var(--hub-accent-tint)]': preload.cached.value }"
-            :disabled="!preload.cached.value"
-            @click="onClearCache"
-          >❌ Clear cached model</button>
+            class="flex-1 rounded-l-md border px-3 py-2 font-mono text-[11px] font-medium transition-colors disabled:cursor-default"
+            :class="preloadDisabled
+              ? 'border-[var(--hub-border)] bg-[var(--hub-surface)] text-[var(--hub-muted)]'
+              : 'cursor-pointer border-[var(--hub-accent)] bg-[var(--hub-accent)] text-white hover:opacity-90'"
+            :disabled="preloadDisabled"
+            @click="onPreload"
+          >{{ preloadLabel }}<span v-if="preload.status.value === 'ready'" class="text-success"> ✓</span></button>
           <button
             type="button"
-            class="block w-full px-3 py-2 text-left text-[11px] text-[var(--hub-text)] disabled:cursor-default disabled:text-[var(--hub-muted)] disabled:opacity-50"
-            :class="{ 'cursor-pointer hover:bg-[var(--hub-accent-tint)]': preload.status.value === 'ready' }"
-            :disabled="preload.status.value !== 'ready'"
-            @click="onUnload"
-          >⭕ Unload from memory</button>
+            class="flex-none rounded-r-md border border-l-0 px-2 font-mono text-[11px] transition-colors disabled:cursor-default disabled:opacity-40"
+            :class="menuDisabled
+              ? 'border-[var(--hub-border)] bg-[var(--hub-surface)] text-[var(--hub-muted)]'
+              : 'cursor-pointer border-[var(--hub-accent)] bg-[var(--hub-accent)] text-white hover:opacity-90'"
+            :disabled="menuDisabled"
+            aria-label="Model actions"
+            :aria-expanded="menuOpen"
+            @click="menuOpen = !menuOpen"
+          >▾</button>
+
+          <div
+            v-if="menuOpen"
+            class="absolute top-[calc(100%+4px)] right-0 z-10 w-48 overflow-hidden rounded-md border border-[var(--hub-border)] bg-[var(--hub-surface)] py-1 shadow-modal"
+          >
+            <button
+              type="button"
+              class="block w-full px-3 py-2 text-left text-[11px] text-[var(--hub-text)] disabled:cursor-default disabled:text-[var(--hub-muted)] disabled:opacity-50"
+              :class="{ 'cursor-pointer hover:bg-[var(--hub-accent-tint)]': preload.cached.value }"
+              :disabled="!preload.cached.value"
+              @click="onClearCache"
+            >❌ Clear cached model</button>
+            <button
+              type="button"
+              class="block w-full cursor-pointer px-3 py-2 text-left text-[11px] text-[var(--hub-text)] hover:bg-[var(--hub-accent-tint)]"
+              @click="onClearAllCache"
+            >🗑️ Clear all downloaded models</button>
+            <button
+              type="button"
+              class="block w-full px-3 py-2 text-left text-[11px] text-[var(--hub-text)] disabled:cursor-default disabled:text-[var(--hub-muted)] disabled:opacity-50"
+              :class="{ 'cursor-pointer hover:bg-[var(--hub-accent-tint)]': preload.status.value === 'ready' }"
+              :disabled="preload.status.value !== 'ready'"
+              @click="onUnload"
+            >⭕ Unload from memory</button>
+          </div>
+        </div>
+
+        <!-- Constant-height status block: reserved error line + loaded-model disk info (version/quant
+             live in the model button above) -->
+        <div class="font-mono text-[10px] leading-[1.6] text-[var(--hub-muted)]">
+          <div class="min-h-[14px] truncate text-error">{{ preload.errorMessage.value || '' }}</div>
+          <div :title="info?.sha256 || ''">Hash: {{ hashText }}</div>
+          <div>On disk: {{ diskText }}</div>
         </div>
       </div>
-      <p v-if="preload.errorMessage.value" class="m-0 text-[11px] text-error">{{ preload.errorMessage.value }}</p>
-      <p v-if="modelInfo.info.value" class="m-0 font-mono text-[10px] leading-[1.5] text-[var(--hub-muted)]">
-        Version: {{ modelInfo.info.value.version }}
-        <br/>
-        Quantization: {{ modelInfo.info.value.quant }}
-        <br/>
-        <span v-if="modelInfo.info.value.sha256" :title="modelInfo.info.value.sha256">
-          Xet hash: {{ modelInfo.info.value.sha256.slice(0, 12) }}...
-        </span>
-        <span v-else>Hash unavailable</span>
-        <br/>
-        <span v-if="modelInfo.info.value.diskBytes !== null">On disk: {{ formatBytes(modelInfo.info.value.diskBytes) }}</span>
-        <span v-else>Not downloaded</span>
-      </p>
     </div>
   </div>
 </template>

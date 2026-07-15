@@ -1,4 +1,10 @@
-import { getEngine, resetEngine, isModelCached, clearModelCache } from '~/lib/agent/engine'
+import {
+  getEngine,
+  resetEngine,
+  isModelCached,
+  clearModelCache,
+  clearAllModelCaches,
+} from '~/lib/agent/engine'
 
 // Lets the root picker page warm up the shared engine before the user opens a domain, so the
 // first message in whichever demo they pick doesn't stall on a cold load. Module-level singleton
@@ -62,5 +68,32 @@ export function useModelPreload() {
     }
   }
 
-  return { status, cached, progress, errorMessage, checkCached, preload, unload, clearCache }
+  /** Delete every cached GGUF from OPFS (all models/quants/versions). Leaves a resident engine running. */
+  async function clearAllCaches() {
+    try {
+      await clearAllModelCaches()
+      cached.value = false
+    } catch (err) {
+      errorMessage.value = 'Failed to clear the downloaded models.'
+      console.error('[model-preload] clear-all failed:', err)
+    }
+  }
+
+  /** After the selected model changed (engine torn down, new pick not yet loaded): reset to idle and
+   *  re-check whether the newly selected model's GGUF is already cached. */
+  async function syncToSelection() {
+    status.value = 'idle'
+    progress.value = null
+    errorMessage.value = null
+    try {
+      cached.value = await isModelCached()
+    } catch {
+      cached.value = null
+    }
+  }
+
+  return {
+    status, cached, progress, errorMessage,
+    checkCached, preload, unload, clearCache, clearAllCaches, syncToSelection,
+  }
 }

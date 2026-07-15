@@ -1,8 +1,7 @@
 import { getEngine, resetEngine, type EngineCallbacks } from '~/lib/agent/engine'
 
-// Module-level singleton (mirrors useModelPreload/useSpeech*) so the GPU/CPU preference and its
-// resolved state are shared by every consumer - the chat panel's toggle and the index page's
-// toggle drive and reflect the exact same setting, with no per-domain duplication.
+// Module-level singleton so the GPU/CPU preference and resolved state are shared by every consumer
+// (chat panel toggle and index-page toggle drive the same setting).
 
 export type BackendKind = 'webgpu' | 'cpu'
 export type BackendPref = BackendKind | 'auto'

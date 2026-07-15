@@ -18,7 +18,7 @@ const toolModalOpen = computed({
   },
 })
 
-// Keep the newest reply/tool-call in view as the conversation grows or status changes.
+// Keep the newest reply/tool-call in view as the conversation grows.
 function scrollToLatest() {
   nextTick(() => {
     const el = bodyEl.value
@@ -86,8 +86,7 @@ const pct = computed(() => {
               @click="voice.stop"
             >⏹</button>
           </template>
-          <!-- Not the active track (or nothing playing) - a persistent replay button, since
-               stopping a track no longer removes the ability to hear it again. -->
+          <!-- Not the active track: a persistent replay button. -->
           <button
             v-else
             type="button"

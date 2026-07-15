@@ -31,8 +31,8 @@ const demos = [
           <h1 class="text-[clamp(1.5rem,1rem+2vw,2.1rem)] leading-[1.1] font-bold tracking-[-0.03em] text-[var(--hub-text)]">
             Generalist agent, on Your device
           </h1>
-          <p class="mt-4 pl-1 max-w-[420px] text-[13px] leading-[1.5] text-[var(--hub-muted)]">
-            A tiny language model running entirely in your browser, driving various UIs with tools.
+          <div class="mt-4 pl-1 max-w-[420px] text-[13px] leading-[1.5] text-[var(--hub-muted)]">
+            <p>A tiny language model running entirely in your browser, driving various UIs with tools.</p>
             <ul class="pt-3">
               <li>
                 <NuxtLink
@@ -55,10 +55,10 @@ const demos = [
                 >→ Github</a>
               </li>
             </ul>
-          </p>
+          </div>
         </div>
 
-        <div class="hidden w-full shrink-0 rounded-lg border border-[var(--hub-border)] bg-[var(--hub-surface)] p-4 sm:block sm:w-[240px]">
+        <div class="hidden w-full shrink-0 rounded-lg border border-[var(--hub-border)] bg-[var(--hub-surface)] p-4 sm:block sm:w-[400px]">
           <HubSettingsPanel />
         </div>
         <button

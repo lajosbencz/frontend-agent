@@ -1,17 +1,10 @@
 <script setup lang="ts">
 import { useCartStore } from '~/stores/cart'
+import type { ProductCardItem } from '~/lib/shop'
 
 const props = defineProps<{
   domain: string
-  product: {
-    path: string
-    slug: string
-    title: string
-    price: number
-    summary: string
-    category: string
-    inStock: boolean
-  }
+  product: ProductCardItem
 }>()
 
 const cart = useCartStore(props.domain)

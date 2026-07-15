@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { perDomainStore } from './perDomain'
 
 export interface CartLine {
   slug: string
@@ -6,8 +7,6 @@ export interface CartLine {
   price: number
   quantity: number
 }
-
-const stores = new Map<string, ReturnType<typeof defineCartStore>>()
 
 function defineCartStore(domain: string) {
   return defineStore(`cart:${domain}`, {
@@ -41,11 +40,4 @@ function defineCartStore(domain: string) {
   })
 }
 
-export function useCartStore(domain: string) {
-  let define = stores.get(domain)
-  if (!define) {
-    define = defineCartStore(domain)
-    stores.set(domain, define)
-  }
-  return define()
-}
+export const useCartStore = perDomainStore(defineCartStore)

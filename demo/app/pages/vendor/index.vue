@@ -13,16 +13,15 @@ const shelfRows = computed(() => [
   vendor.shelves.filter((g) => g.shelf === 4),
 ])
 
-// This domain has no launcher/⌘K - the whole page IS the conversation, so start loading right away.
+// No launcher - the whole page IS the conversation, so start loading right away.
 onMounted(() => runtime.activate())
 </script>
 
 <template>
   <div class="wrap flex h-full min-h-0 max-w-[1080px] flex-col pt-5 pb-5">
-    <!-- Illustrated store scene - hand-drawn SVG grocer + bunting, emoji goods. Fills the rest of
-         the viewport: shelves on top, then a row with the grocer/counter and the docked chat. -->
+    <!-- Illustrated store scene: shelves on top, grocer/counter + docked chat below. -->
     <div class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-surface-3">
-      <!-- Market bunting: alternating pennant flags strung across the shopfront. -->
+      <!-- Market bunting. -->
       <svg viewBox="0 0 400 26" preserveAspectRatio="none" class="block h-[20px] w-full flex-none" aria-hidden="true">
         <path
           v-for="i in 16"
@@ -32,13 +31,10 @@ onMounted(() => runtime.activate())
         />
       </svg>
 
-      <!-- Content row: shelves+counter column (left) and the docked chat column (right) - a row
-           on wide screens, stacked on narrow ones. -->
+      <!-- Content row: shelves+counter column (left), docked chat (right); stacks on narrow. -->
       <div class="flex min-h-0 flex-1 flex-col min-[60rem]:flex-row">
-        <!-- Shelves and counter are both flex-none: each renders at its natural (content-driven)
-             size and never shrinks, so neither can get squeezed into the other. If the window is
-             too short to fit both at that size, this column scrolls (overflow-y-auto) instead of
-             compressing anything - no pixel heights locked anywhere. -->
+        <!-- Shelves and counter are flex-none (natural size, never shrink); this column scrolls
+             instead of compressing them when too short. -->
         <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-6 pt-3 pb-6">
           <div class="flex flex-none flex-col gap-2.5">
             <div v-for="(row, i) in shelfRows" :key="i" class="flex flex-col gap-1.5">
@@ -77,8 +73,7 @@ onMounted(() => runtime.activate())
             </svg>
 
             <div class="min-w-0 flex-1">
-              <!-- Deep oak counter - an actual wood surface, not another card, so it doesn't read
-                   as a text input sitting next to the shelves. -->
+              <!-- Deep oak counter: a wood surface, not a card, so it doesn't read as a text input. -->
               <div class="relative flex min-h-16 flex-wrap content-start gap-2 rounded-lg border border-[#33200f] bg-[repeating-linear-gradient(90deg,#5c3a20_0px,#5c3a20_5px,#4c2f19_5px,#4c2f19_10px)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_8px_24px_-12px_rgba(0,0,0,0.5)]">
                 <TransitionGroup name="drop">
                   <div
@@ -97,8 +92,7 @@ onMounted(() => runtime.activate())
           </div>
         </div>
 
-        <!-- Same shared chat component every domain uses - docked here instead of floating, with
-             no launcher/close since the whole page IS the conversation. -->
+        <!-- Shared chat component, docked with no launcher/close. -->
         <div class="flex h-[280px] min-h-0 flex-none flex-col overflow-hidden border-t border-border-2 bg-surface min-[60rem]:h-auto min-[60rem]:w-[360px] min-[60rem]:border-t-0 min-[60rem]:border-l">
           <AgentPanel
             domain="vendor"
@@ -139,8 +133,7 @@ onMounted(() => runtime.activate())
 </template>
 
 <style scoped>
-/* Vue-transition class hooks (driven by the <TransitionGroup name="drop"> above) - not
-   expressible as Tailwind utility classes since Vue applies these class names itself. */
+/* Vue-transition class hooks (name="drop") - Vue applies these itself, not Tailwind utilities. */
 .drop-enter-active { transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.2, 1.4, 0.4, 1); }
 .drop-enter-from { opacity: 0; transform: translateY(-14px) scale(0.9); }
 </style>

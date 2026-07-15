@@ -1,7 +1,7 @@
 {
   "name": "frontend-agent",
-  "version": "1.0.5",
-  "description": "Drive the LFM2.5-230M frontend-agent model in the browser: tool-calling + RAG-grounded answering, fully typed. Loads the GGUF from Hugging Face via wllama.",
+  "version": "1.2.0",
+  "description": "Drive the LFM2.5 (230M/350M) frontend-agent model in the browser: tool-calling + RAG-grounded answering, fully typed. Loads the GGUF from Hugging Face via wllama.",
   "license": "Apache-2.0",
   "type": "module",
   "sideEffects": false,
@@ -29,6 +29,7 @@
   "files": [
     "dist"
   ],
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -49,18 +50,18 @@
     "test": "vitest run",
     "prepack": "cp ../../README.md ./README.md"
   },
+  "dependencies": {
+    "@wllama/wllama": "^3.5.1"
+  },
   "peerDependencies": {
-    "@wllama/wllama": ">=3.5.0",
     "minisearch": ">=7.0.0",
     "stemmer": ">=2.0.0"
   },
   "peerDependenciesMeta": {
-    "@wllama/wllama": { "optional": true },
     "minisearch": { "optional": true },
     "stemmer": { "optional": true }
   },
   "devDependencies": {
-    "@wllama/wllama": "^3.5.1",
     "minisearch": "^7.2.0",
     "stemmer": "^2.0.1",
     "tsup": "^8.5.1",

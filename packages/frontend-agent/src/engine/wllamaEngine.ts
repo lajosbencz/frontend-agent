@@ -35,7 +35,7 @@ export interface WllamaEngineConfig {
 const DEFAULT_MODEL: Required<HFModelRef> = {
   repo: 'lazos/lfm2.5-230m-frontend-agent',
   version: 'main',
-  quant: 'Q6_K',
+  quant: 'Q4_K_M',
 }
 
 /** Fill in any missing fields of a model ref from the library default. */
@@ -56,11 +56,8 @@ export interface ModelFileMeta {
   bytes: number | null
 }
 
-/**
- * HEAD-fetch the resolved GGUF URL for its content hash and size, without downloading the file.
- * For a floating ref like `version: 'main'`, this is how you tell which exact build you actually
- * got - the hash is the file's real identity, independent of what the ref currently points to.
- */
+/** HEAD the GGUF URL for its content hash + size without downloading. For a floating ref (`main`)
+ *  the hash is the only reliable identity of the build actually served. */
 export async function fetchModelMeta(url: string): Promise<ModelFileMeta> {
   const res = await fetch(url, { method: 'HEAD' })
   const etag = res.headers.get('etag')
@@ -80,11 +77,8 @@ async function detectWebGPU(): Promise<boolean> {
   }
 }
 
-/**
- * Real engine: runs the GGUF in-browser via wllama (llama.cpp WASM/WebGPU). Loads the model from
- * Hugging Face by default (configurable), caches it in OPFS, and applies the GBNF grammar at decode.
- * Framework-agnostic - reports lifecycle via callbacks, no store coupling.
- */
+/** Runs the GGUF in-browser via wllama (llama.cpp WASM/WebGPU): loads from HF (OPFS-cached), applies
+ *  the GBNF grammar at decode. Framework-agnostic - lifecycle via callbacks, no store coupling. */
 export class WllamaEngine implements AgentEngine {
   private wllamaPromise: Promise<Wllama> | null = null
   private warnedSystemSize = false
@@ -125,10 +119,8 @@ export class WllamaEngine implements AgentEngine {
       const load = async (nThreads?: number): Promise<Wllama> => {
         const instance = new Wllama(wllamaAssets)
         onStatus?.('downloading')
-        // wllama has no separate hook for "download done, now initializing" - the progress
-        // callback stalling at 100% while loadModelFromUrl hasn't resolved yet IS that gap, so
-        // infer the transition from it (once) rather than leaving the caller stuck on a stale
-        // "downloading 100%" label through however long GGUF parsing/context init takes.
+        // wllama has no "download done, initializing" hook; progress pinned at 100% before
+        // loadModelFromUrl resolves IS that gap - infer the loading transition from it (once).
         let announcedLoading = false
         await instance.loadModelFromUrl(this.url, {
           n_ctx: this.nCtx,
@@ -145,9 +137,8 @@ export class WllamaEngine implements AgentEngine {
         return instance
       }
 
-      // Try the fast path (auto = WebGPU / multi-thread WASM); on a threads-build trap, fall back
-      // once to single-thread. Reacts to the actual failure, not a UA string. OPFS-cached, so the
-      // retry never re-downloads.
+      // Fast path (WebGPU / multi-thread WASM); on a threads-build trap fall back once to
+      // single-thread. Reacts to the real failure, not a UA string. OPFS-cached so no re-download.
       let instance: Wllama
       try {
         instance = await load()
@@ -183,9 +174,8 @@ export class WllamaEngine implements AgentEngine {
       }
     }
 
-    // Full system text (persona + catalog + "List of tools: [...]") is baked into the system message,
-    // so we pass NO `tools` - wllama's chat template renders turns/markers. The GBNF grammar (when
-    // supplied) guarantees a structurally-valid call + id-grounding at decode time.
+    // Tools live in the system text already, so pass NO `tools`; the GBNF grammar (when supplied)
+    // guarantees a structurally-valid call + id-grounding at decode time.
     const response = await wllama.createChatCompletion({
       messages: messages as never,
       max_tokens: this.maxTokens,

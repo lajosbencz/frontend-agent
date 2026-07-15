@@ -11,6 +11,6 @@ export default defineConfig({
   clean: true,
   sourcemap: true,
   treeshake: true,
-  // optional peer deps stay external - pulled only when the consumer uses that subpath
+  // wllama is a hard dep; minisearch/stemmer are optional peers (only the ./rag subpath imports them)
   external: ['@wllama/wllama', 'minisearch', 'stemmer'],
 })

@@ -10,12 +10,8 @@ import type {
   RagIndex,
 } from './types'
 
-/**
- * Zero-infra in-browser retrieval: MiniSearch (BM25 + fuzzy + prefix) with a Porter stemmer over an
- * index you supply. The algorithm need NOT match the training retriever - the model grounds in
- * whatever RESULTS come back; only the result shape is the contract. Construct with an index object,
- * or `LocalMiniSearchRAG.fromUrl(url)` to fetch one.
- */
+/** Zero-infra in-browser retrieval: MiniSearch (BM25 + fuzzy + prefix) + Porter stemmer over a
+ *  supplied index. Only the result shape is the contract, not the algorithm. */
 export class LocalMiniSearchRAG implements RagBackend {
   private readonly cat: MiniSearch<CatalogItem>
   private readonly know: MiniSearch<KnowledgeItem>
@@ -49,9 +45,9 @@ export class LocalMiniSearchRAG implements RagBackend {
     return new LocalMiniSearchRAG((await res.json()) as RagIndex)
   }
 
-  hint(n = 6): string {
-    // Representative sample ACROSS groups - not the first n (which may all be one category, leaving
-    // the model unaware the store even sells other categories). Round-robin: one per group, repeat.
+  /** Representative sample ACROSS groups (round-robin: one per group, repeat), so the sample spans
+   *  categories rather than the first n of one. Shared by `hint` and `representativeItems`. */
+  private sample(n: number): CatalogItem[] {
     const groups = new Map<string, CatalogItem[]>()
     for (const c of this.catById.values()) {
       const g = c.group ?? ''
@@ -64,11 +60,21 @@ export class LocalMiniSearchRAG implements RagBackend {
     const max = Math.max(0, ...buckets.map((b) => b.length))
     for (let i = 0; i < max && picked.length < n; i++) {
       for (const b of buckets) {
-        if (b[i]) picked.push(b[i])
+        if (b[i]) picked.push(b[i]!)
         if (picked.length >= n) break
       }
     }
-    return picked.map((c) => `${c.title} [${c.id}]`).join('; ')
+    return picked
+  }
+
+  hint(n = 6): string {
+    return this.sample(n).map((c) => `${c.title} [${c.id}]`).join('; ')
+  }
+
+  /** A representative page of on-screen catalog items for the injected VIEW - the model grounds in
+   *  these and reaches the rest via `list_items`. */
+  representativeItems(n = 10): CatalogItemLite[] {
+    return this.sample(n).map((c) => ({ id: c.id, title: c.title, price: c.price, in_stock: c.in_stock }))
   }
 
   getItem(id: string): CatalogItemLite | null {

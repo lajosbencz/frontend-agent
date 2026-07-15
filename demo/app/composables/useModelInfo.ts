@@ -1,8 +1,7 @@
 import { getModelInfo } from '~/lib/agent/engine'
 
-// Configured model repo/version/quant, the served file's hash (a cheap HEAD request, no download),
-// and the size actually sitting in the OPFS cache - fetched once and shared across every consumer,
-// mirroring useModelPreload.
+// Configured model repo/version/quant, the served file's hash (cheap HEAD, no download), and the
+// size sitting in the OPFS cache - fetched once and shared across every consumer.
 
 export interface ModelInfo {
   repo: string
@@ -15,7 +14,6 @@ export interface ModelInfo {
 }
 
 const info = ref<ModelInfo | null>(null)
-const errorMessage = ref<string | null>(null)
 let checked = false
 
 export function useModelInfo() {
@@ -24,18 +22,16 @@ export function useModelInfo() {
     checked = true
     try {
       info.value = await getModelInfo()
-      errorMessage.value = null
     } catch (err) {
-      errorMessage.value = 'Could not check the model file.'
       console.error('[model-info] failed:', err)
     }
   }
 
-  /** Mount hook - only fetches once; call `refresh()` after an action that changes the cache. */
+  // Mount hook - fetches once; call refresh() after an action that changes the cache.
   async function check() {
     if (checked) return
     await refresh()
   }
 
-  return { info, errorMessage, check, refresh }
+  return { info, check, refresh }
 }

@@ -2,9 +2,7 @@
 defineProps<{ modelValue: boolean; disabled?: boolean }>()
 defineEmits<{ 'update:modelValue': [boolean] }>()
 
-// Colors default to the storefront tokens, but a container can override --toggle-accent/
-// --toggle-border to fit a different local palette (e.g. the hub pages' independent --hub-*
-// tokens) without this generic component knowing which context it's rendered in.
+// Colors default to storefront tokens; a container can override --toggle-* for a local palette.
 </script>
 
 <template>

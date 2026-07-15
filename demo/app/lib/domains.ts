@@ -7,7 +7,7 @@ export interface DomainConfig {
   brand: string
   links: DomainNavLink[]
   theme?: 'dark'
-  /** 'panel' = docked ⌘K assistant (NavBar shows the launcher). 'inline' = bespoke in-page chat. */
+  /** 'panel' = docked Cmd-K assistant (NavBar shows the launcher). 'inline' = bespoke in-page chat. */
   assistant: 'panel' | 'inline'
   /** Fills the viewport below the nav, no footer, no page scroll - for app-like single-screen domains. */
   fullHeight?: boolean

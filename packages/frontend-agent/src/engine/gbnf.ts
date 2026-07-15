@@ -1,15 +1,9 @@
 import type { ToolSchema } from '../tools/types'
 
-/**
- * Generate a GBNF grammar that constrains LFM2.5 tool-call decoding to the injected tool schema.
- * TS port of training/kbft/gbnf.py (kept in lockstep - validated against llama.cpp).
- *
- * The model supplies the POLICY (which tool, when, which id semantically); the grammar GUARANTEES the
- * STRUCTURE at decode time: only valid tool names, that tool's arg keys/types, enum values, and - when
- * `validIds` (the ids present in results so far) is given - the id argument is forced to one of those,
- * so id-grounding becomes unfaultable (a truncated/hallucinated id is impossible to emit). Applied via
- * wllama's `grammar` sampling param. `allowText` keeps a free-text reply branch so normal answers work.
- */
+// GBNF grammar constraining tool-call decoding to the injected schema. TS port of
+// training/kbft/gbnf.py (kept in lockstep). The model supplies the policy; the grammar guarantees
+// structure at decode: valid tool names, arg keys/types, enum values, and - when `validIds` is given
+// - forces the id arg to one of them (id-grounding unfaultable). `allowText` keeps a free-text branch.
 
 function lit(s: string): string {
   return '"' + s.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"'
@@ -65,7 +59,8 @@ export function buildToolGrammar(
     // required args in order, comma-joined; optionals each appended optionally (matches the model)
     let seq = reqFrags.join(' sep ')
     for (const o of optFrags) seq = (seq ? seq + ' ' : '') + `( sep ${o} )?`
-    rules.push(`${r}-call ::= ${lit(name + '(')} ${seq} ${lit(')')}`.replace(/ {2}/g, ' '))
+    const inner = seq ? `${lit(name + '(')} ${seq} ${lit(')')}` : `${lit(name + '(')} ${lit(')')}`
+    rules.push(`${r}-call ::= ${inner}`)
     callAlts.push(`${r}-call`)
   }
 

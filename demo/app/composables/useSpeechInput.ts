@@ -1,10 +1,9 @@
 import { micSupported, startRecording, type Recording } from '~/lib/agent/speech/recorder'
 import { sttEnabled as enabled } from './usePreferences'
 
-// Optional voice layer for the assistant: record → Whisper-tiny → text, fed into the normal
-// send path. State is a module-level singleton (like the wllama engine promise) so the mic
-// button and its status stay in sync wherever the panel is mounted. Everything is client-only;
-// the whisper module is imported lazily on first use so it never bloats the initial bundle.
+// Optional voice layer: record -> Whisper-tiny -> text, fed into the normal send path. State is a
+// module-level singleton so the mic button/status stay in sync wherever the panel mounts; the
+// whisper module is imported lazily on first use.
 
 export type SpeechStatus = 'idle' | 'recording' | 'transcribing' | 'error'
 export type MicPermission = 'unknown' | 'granted' | 'denied'
@@ -16,9 +15,7 @@ export interface SpeechState {
   errorMessage: Ref<string | null>
 }
 
-// STT is off by default; the user opts in via the panel toggle, which requests mic permission
-// once. `enabled` is the shared preference (see usePreferences); the rest is a module-level
-// singleton so recording state stays in sync wherever the panel mounts.
+// Off by default; the user opts in via the panel toggle (which requests mic permission once).
 const permission = ref<MicPermission>('unknown')
 const status = ref<SpeechStatus>('idle')
 const backend = ref<'webgpu' | 'wasm' | null>(null)
@@ -42,11 +39,10 @@ function peakAmplitude(samples: Float32Array): number {
   return peak
 }
 
-/** Prompt for mic access (silent if already granted). Returns whether access is available. */
 async function requestMicPermission(): Promise<boolean> {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-    stream.getTracks().forEach((t) => t.stop()) // we only wanted the grant
+    stream.getTracks().forEach((t) => t.stop()) // only wanted the grant
     permission.value = 'granted'
     return true
   } catch (err) {
@@ -59,7 +55,6 @@ async function requestMicPermission(): Promise<boolean> {
 export function useSpeechInput() {
   const supported = import.meta.client && micSupported()
 
-  /** Turn STT on: request permission if we don't already have it. No-op if it can't be granted. */
   async function enable() {
     if (!supported) {
       status.value = 'error'
@@ -76,7 +71,6 @@ export function useSpeechInput() {
     enabled.value = true
   }
 
-  /** Turn STT off: stop any in-flight capture and hide the mic. Permission grant is kept. */
   function disable() {
     cancel()
     enabled.value = false
@@ -87,11 +81,8 @@ export function useSpeechInput() {
     else await enable()
   }
 
-  /**
-   * One button for the whole cycle. Returns the transcript when a take completes (caller sends
-   * it), or null when it just started recording / errored. Model load is kicked off in parallel
-   * with recording so it's usually warm by the time the user stops talking.
-   */
+  // One button for the whole cycle: returns the transcript when a take completes, or null when it
+  // just started recording / errored. Model load runs in parallel with recording.
   async function toggle(): Promise<string | null> {
     if (!enabled.value) return null
 
@@ -119,7 +110,6 @@ export function useSpeechInput() {
       }
     }
 
-    // start
     errorMessage.value = null
     try {
       // Warm the model while the user speaks.
@@ -144,15 +134,12 @@ export function useSpeechInput() {
   return {
     supported,
     enabled,
-    permission,
     status,
-    backend,
     modelProgress,
     errorMessage,
     enable,
     disable,
     toggleEnabled,
     toggle,
-    cancel,
   }
 }

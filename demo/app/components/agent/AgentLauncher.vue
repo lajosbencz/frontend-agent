@@ -4,12 +4,10 @@ import type { DomainKey } from '~/lib/agent/domains'
 
 const props = defineProps<{ domain: DomainKey }>()
 const agent = useAgentStore(props.domain)
-// (Esc-to-close is handled in AgentPanel.)
 </script>
 
 <template>
-  <!-- Docked assistant. Sticky right column on wide screens; fixed bottom sheet on narrow.
-       Renders nothing when closed, so the content column is full-width. -->
+  <!-- Docked assistant: sticky right column on wide screens, fixed bottom sheet on narrow. -->
   <Transition name="dock">
     <aside
       v-if="agent.panelOpen"
@@ -21,8 +19,7 @@ const agent = useAgentStore(props.domain)
 </template>
 
 <style scoped>
-/* Vue-transition class hooks (driven by the <Transition name="dock"> above) - not expressible as
-   Tailwind utility classes since Vue applies these class names itself based on the `name` prop. */
+/* Vue-transition class hooks (name="dock") - Vue applies these itself, not Tailwind utilities. */
 .dock-enter-active,
 .dock-leave-active {
   transition: opacity 0.18s ease, transform 0.18s ease;

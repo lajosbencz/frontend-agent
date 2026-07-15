@@ -3,7 +3,7 @@ import type { ToolDefinition, ToolHandler, ToolSchema } from './types'
 export interface ToolRegistry {
   /** Tool schemas, in order - injected into the system prompt (order is contract-significant). */
   schemas: ToolSchema[]
-  /** name → handler dispatch map. */
+  /** name -> handler dispatch map. */
   handlers: Record<string, ToolHandler>
 }
 

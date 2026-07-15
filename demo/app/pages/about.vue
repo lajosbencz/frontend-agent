@@ -43,13 +43,13 @@ const demos = [
         </p>
         <p class="mt-2 text-[13px] leading-[1.5] text-[var(--hub-text-2)]">
           Besides the cool factor, running an on-device agent can be useful for:
-          <ul class="list-disc ml-3 mt-1 text-[12px]">
-            <li>offline usage</li>
-            <li>user privacy</li>
-            <li>user accessibility</li>
-            <li>hosting cost reduction</li>
-          </ul>
         </p>
+        <ul class="list-disc ml-3 mt-1 text-[12px] text-[var(--hub-text-2)]">
+          <li>offline usage</li>
+          <li>user privacy</li>
+          <li>user accessibility</li>
+          <li>hosting cost reduction</li>
+        </ul>
         <p class="mt-2 text-[13px] leading-[1.5] text-[var(--hub-text-2)]">
           Combining it with <em>ARIA Roles</em> and <em>Semantic Elements</em> can make navigating a complex UI a breeze.
         </p>

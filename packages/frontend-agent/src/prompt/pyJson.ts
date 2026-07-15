@@ -1,9 +1,5 @@
-/**
- * Serialize a value the way Python's json.dumps (and Jinja2's `tojson`) does by default:
- * ", " between items and ": " after keys. The model's chat template renders the tool list
- * with these separators, so the browser must match them byte-for-byte for train/inference
- * parity. (Our tool schemas are ASCII with no <,>,& so htmlsafe escaping never triggers.)
- */
+/** Serialize like Python json.dumps defaults (", " between items, ": " after keys) - the model's
+ *  chat template renders the tool list this way, so match it byte-for-byte for train/inference parity. */
 export function pyJson(v: unknown): string {
   if (v === null) return 'null'
   if (typeof v === 'string') return JSON.stringify(v)

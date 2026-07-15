@@ -3,44 +3,30 @@ import tailwindcss from '@tailwindcss/vite'
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   modules: ['@nuxt/content', '@pinia/nuxt'],
-  devtools: { enabled: true },
   compatibilityDate: '2024-04-03',
   css: ['~/assets/css/tailwind.css'],
 
-  // Static hosting on GitHub Pages: `npm run generate` prerenders every route to static HTML
-  // (no server runtime). Set NUXT_APP_BASE_URL=/<repo>/ for project pages (user.github.io/<repo>).
   ssr: true,
   nitro: {
-    preset: 'github_pages', // emits .nojekyll + 404.html and honors app.baseURL
+    // Static export for GitHub Pages (`npm run generate`); set NUXT_APP_BASE_URL=/<repo>/ for project pages.
+    preset: 'github_pages',
     prerender: { crawlLinks: true, routes: ['/'] },
   },
   app: {
     baseURL: process.env.NUXT_APP_BASE_URL || '/',
     head: {
-      // Cross-origin-isolation shim: on a static host (GitHub Pages) this SW re-adds COOP/COEP so
-      // SharedArrayBuffer is available and wllama runs multi-threaded. Loaded first (critical) and
-      // base-URL aware; on a header-capable host it's a no-op (already isolated).
+      // Restores cross-origin isolation on static hosts that can't send the headers below.
       script: [
-        {
-          src: `${process.env.NUXT_APP_BASE_URL || '/'}coi-serviceworker.js`,
-          tagPriority: 'critical',
-        },
+        { src: `${process.env.NUXT_APP_BASE_URL || '/'}coi-serviceworker.js`, tagPriority: 'critical' },
       ],
     },
   },
 
   runtimeConfig: {
     public: {
-      // NUXT_PUBLIC_RAG_ENDPOINT: a POST /search URL to use your own vector/fulltext DB.
-      ragEndpoint: '',
-      // NUXT_PUBLIC_MODEL_REPO: lazos/lfm2.5-230m-frontend-agent
       modelRepo: '',
-      // NUXT_PUBLIC_MODEL_VERSION: main
       modelVersion: '',
-      // NUXT_PUBLIC_MODEL_QUANT: Q6_K
       modelQuant: '',
-      // NUXT_PUBLIC_MODEL_URL: full GGUF URL (local or remote) - overrides repo/version/quant.
-      // e.g. /models/my-model-Q6_K.gguf (served from public/) or https://host/model.gguf
       modelUrl: '',
     },
   },
@@ -48,22 +34,22 @@ export default defineNuxtConfig({
   vite: {
     plugins: [tailwindcss()],
     optimizeDeps: {
-      include: ['@wllama/wllama'],
-      // transformers.js pulls in onnxruntime-web (wasm + workers); let Vite serve it as-is
-      // instead of pre-bundling, which mangles its wasm/worker asset resolution.
-      exclude: ['@huggingface/transformers'],
+      // frontend-agent's transitive deps are pre-bundled here (the lib itself is excluded below, so
+      // Vite can't discover them from it) to avoid first-load page reloads.
+      include: ['@wllama/wllama', 'minisearch', 'stemmer', 'marked'],
+      // Don't pre-bundle the local workspace lib: Vite would cache a stale copy of dist/ and 404 after
+      // a lib rebuild. Excluded -> it resolves fresh from dist each time (rebuild the lib to update).
+      exclude: ['@huggingface/transformers', 'frontend-agent'],
     },
   },
 
   routeRules: {
-    // Cross-origin isolation for wllama's multi-threaded WASM (SharedArrayBuffer). These are HTTP
-    // headers, so they apply in dev / on a header-capable host; GitHub Pages can't send them, so
-    // wllama auto-falls-back to single-thread there (slower but works). A coi-serviceworker shim
-    // can re-enable SAB on Pages later if needed.
+    // Cross-origin isolation for wllama's SharedArrayBuffer. `credentialless` keeps isolation while
+    // still allowing cross-origin (Hugging Face) model downloads; `require-corp` blocks them.
     '/**': {
       headers: {
         'Cross-Origin-Opener-Policy': 'same-origin',
-        'Cross-Origin-Embedder-Policy': 'require-corp',
+        'Cross-Origin-Embedder-Policy': 'credentialless',
       },
     },
   },

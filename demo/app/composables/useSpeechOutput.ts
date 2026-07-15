@@ -1,9 +1,6 @@
-// Optional TTS layer for the assistant: speaks new assistant replies via an in-browser neural TTS
-// model (see ttsClient.ts) - the whisper-style counterpart to STT, and more reliable than the
-// browser's built-in SpeechSynthesis (notably silent on Firefox/Linux without an OS voice backend).
-// `enabled` is the shared preference (see usePreferences), so a toggle on the root picker page
-// carries into whichever domain's panel opens next. State is a module-level singleton so it stays
-// in sync wherever a panel/dialogue mounts.
+// Optional TTS layer: speaks new assistant replies via an in-browser neural TTS model (ttsClient),
+// the counterpart to STT. `enabled` is the shared preference; state is a module-level singleton so
+// it stays in sync wherever a panel mounts.
 
 import { ttsEnabled as enabled } from './usePreferences'
 
@@ -22,13 +19,11 @@ const modelProgress = ref<number | null>(null)
 const errorMessage = ref<string | null>(null)
 const state: VoiceState = { status, backend, modelProgress, errorMessage }
 
-/** Which transcript entry (by index, caller-defined) is currently loading/speaking/paused, if any -
- *  lets the transcript show play/pause/stop controls next to that specific message bubble. */
+// Which transcript entry is loading/speaking/paused, so the UI can show controls on that bubble.
 const speakingIndex = ref<number | null>(null)
 
-// Bumped by every speak()/stop() call. Only one track plays at a time (ttsClient.speak() stops
-// whatever's active first) - a superseded speak() call's continuation checks this before touching
-// status/speakingIndex, so it can't clobber the newer call's state once the older track is stopped.
+// Bumped by every speak()/stop(). Only one track plays at a time; a superseded speak()'s
+// continuation checks this before touching status/speakingIndex, so it can't clobber newer state.
 let generation = 0
 
 export function useSpeechOutput() {
@@ -38,7 +33,7 @@ export function useSpeechOutput() {
     enabled.value = true
     errorMessage.value = null
     if (status.value === 'error') status.value = 'idle'
-    // Warm the model in the background so the first reply doesn't stall on a cold load.
+    // Warm the model so the first reply doesn't stall on a cold load.
     import('~/lib/agent/speech/ttsClient').then((m) => m.preloadTTS(state)).catch(() => {})
   }
 
@@ -52,8 +47,7 @@ export function useSpeechOutput() {
     else enable()
   }
 
-  /** Speak `text` if TTS is enabled. No-op otherwise (called unconditionally by callers). `index`
-   *  identifies the transcript entry for `speakingIndex`, so the UI knows which bubble owns this. */
+  // Speak `text` if enabled. `index` identifies the owning transcript bubble for `speakingIndex`.
   async function speak(text: string, index?: number) {
     if (!enabled.value || !supported || !text) return
     const gen = ++generation
@@ -76,7 +70,6 @@ export function useSpeechOutput() {
     }
   }
 
-  /** Pause the in-flight utterance (no-op if nothing is speaking). */
   async function pause() {
     if (status.value !== 'speaking') return
     const { pause: pauseImpl } = await import('~/lib/agent/speech/ttsClient')
@@ -84,7 +77,6 @@ export function useSpeechOutput() {
     status.value = 'paused'
   }
 
-  /** Resume a paused utterance. */
   async function resume() {
     if (status.value !== 'paused') return
     const { resume: resumeImpl } = await import('~/lib/agent/speech/ttsClient')
@@ -92,8 +84,6 @@ export function useSpeechOutput() {
     status.value = 'speaking'
   }
 
-  /** Stop the in-flight/paused utterance outright. Leaves `speakingIndex` alone if nothing was
-   *  playing, so a stray call (e.g. from `disable()`) can't disturb an already-idle state. */
   async function stop() {
     if (status.value !== 'speaking' && status.value !== 'paused') return
     generation++ // mark any in-flight speak() as superseded
@@ -107,7 +97,6 @@ export function useSpeechOutput() {
     supported,
     enabled,
     status,
-    backend,
     modelProgress,
     errorMessage,
     speakingIndex,

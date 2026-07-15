@@ -19,22 +19,22 @@ export type AgentEvent =
 
 export interface AgentConfig {
   engine: AgentEngine
-  /** The tool set (schemas + handlers). Build with `buildRegistry(referenceTools(...))` or `buildRegistry(yourTools)`. */
+  /** Schemas + handlers, from `buildRegistry(referenceTools(...))` or `buildRegistry(yourTools)`. */
   tools: ToolRegistry
-  /** The system prompt, or a provider called once per `submit`. */
-  systemPrompt: string | (() => string | Promise<string>)
+  /** Fixed string, or a provider called once per `submit` (receives the user turn) so the host can
+   *  inject fresh context C for that turn. */
+  systemPrompt: string | ((turn: { userText: string }) => string | Promise<string>)
   /** Max tool-loop cycles per turn. Default 8 (the longest trained multi-step flow). */
   maxIterations?: number
-  /** Arg keys constrained to seen result ids by the grammar. Default `['id']`. */
+  /** Arg keys constrained to grounded ids by the grammar. Default `['id']`. */
   idKeys?: string[]
+  /** Extra groundable ids beyond tool-result ids - typically the CURRENT VIEW's ids, since bounded
+   *  add/remove targets live in the view, not search results. Returned fresh each turn. */
+  groundingIds?: () => string[]
   /** History token budget (system prompt excluded). Default derived from N_CTX. */
   historyBudgetTokens?: number
-  /**
-   * Per-generation watchdog (ms). Some WASM engines can hang or crash a worker thread without
-   * ever rejecting the in-flight promise (e.g. a trap on a secondary compute thread that leaves
-   * the main thread waiting on a futex forever) - without this, that turn would sit in
-   * 'thinking' indefinitely with no error surfaced. Default 90s; set 0 to disable.
-   */
+  /** Per-generation watchdog (ms). Some WASM engines hang without rejecting (a trapped compute thread
+   *  leaves the main thread on a futex forever); this surfaces it. Default 90s; 0 disables. */
   generationTimeoutMs?: number
 }
 
@@ -45,7 +45,7 @@ class GenerationTimeoutError extends Error {
   }
 }
 
-/** Race a promise against a timeout, without leaking the timer once either settles. */
+/** Clears the timer once either settles. */
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   if (!ms) return promise
   let timer: ReturnType<typeof setTimeout>
@@ -60,10 +60,7 @@ export interface SubmitOptions {
 }
 
 export interface Session {
-  /**
-   * The single programmatic entry point: feed user text from anywhere - a text box, an external
-   * API, or STT output - and run the tool loop to completion. Emits events as it goes.
-   */
+  /** Feed user text (text box, API, STT) and run the tool loop to completion, emitting events. */
   submit(text: string, opts?: SubmitOptions): Promise<void>
   /** Abort the in-flight turn (best-effort: stops between generations/tool calls). */
   abort(): void
@@ -114,9 +111,11 @@ export function createAgent(config: AgentConfig): Session {
       if (signal.aborted) throw new AbortError()
       trimHistory(history, budget)
       const messages: ChatMessage[] = [{ role: 'system', content: system }, ...history]
+      // Ground ids on BOTH tool-result ids and the current view's ids (bounded adds come from the view).
+      const grounded = new Set([...seenIds, ...(config.groundingIds?.() ?? [])])
       const grammar = buildToolGrammar(
         config.tools.schemas,
-        seenIds.size ? [...seenIds] : undefined,
+        grounded.size ? [...grounded] : undefined,
         idKeys,
       )
       const result = await withTimeout(config.engine.generate(messages, grammar), generationTimeoutMs)
@@ -166,7 +165,9 @@ export function createAgent(config: AgentConfig): Session {
       emit({ type: 'status', status: 'thinking' })
       try {
         const system =
-          typeof config.systemPrompt === 'function' ? await config.systemPrompt() : config.systemPrompt
+          typeof config.systemPrompt === 'function'
+            ? await config.systemPrompt({ userText: text })
+            : config.systemPrompt
         await runLoop(system, signal)
         emit({ type: 'done' })
       } catch (err) {
@@ -184,12 +185,8 @@ export function createAgent(config: AgentConfig): Session {
   }
 }
 
-/**
- * Bound accumulated history so system prompt + conversation never overflows the context window
- * (overflow drops tokens from the FRONT - the catalog the model grounds on). Drops whole oldest
- * turns from the front, never leaving a dangling `tool`/assistant continuation at the head, and
- * always keeps the most recent messages.
- */
+/** Bound history to the token budget, dropping whole oldest turns from the FRONT (never leaving a
+ *  dangling `tool` continuation at the head). */
 export function trimHistory(history: ChatMessage[], budget: number): void {
   const tokens = () => history.reduce((n, m) => n + estimateTokens(m.content), 0)
   while (history.length > 2 && tokens() > budget) {

@@ -20,14 +20,16 @@ const rag: RagBackend = {
 
 function harness() {
   const cartState: { id: string; title: string; price: number; quantity: number }[] = []
-  const cart = {
-    add: (item: { id: string; title: string; price: number }, quantity: number) =>
-      void cartState.push({ ...item, quantity }),
-    remove: (id: string) => void cartState.splice(cartState.findIndex((c) => c.id === id), 1),
-    view: () => ({ cart: cartState, total: cartState.reduce((n, c) => n + c.price * c.quantity, 0) }),
-    clear: () => void (cartState.length = 0),
-  }
-  const tools = referenceTools({ rag, cart, navigate: () => {} })
+  const tools = referenceTools({
+    list_items: (q) => rag.searchCatalog(q),
+    get_item: (id) => rag.getItem!(id),
+    search_knowledge: (q) => rag.searchKnowledge(q),
+    add_to_cart: (item, quantity) => void cartState.push({ ...item, quantity }),
+    remove_from_cart: (id) => void cartState.splice(cartState.findIndex((c) => c.id === id), 1),
+    clear_cart: () => void (cartState.length = 0),
+    checkout: () => ({ ok: true }),
+    navigate: () => {},
+  })
   const registry = buildRegistry(tools)
   const engine = new StubEngine()
   const session = createAgent({
@@ -51,7 +53,7 @@ describe('session.submit - programmatic feed', () => {
     expect(types.at(-1)).toBe('done')
 
     const call = events.find((e) => e.type === 'tool_call')
-    expect(call && call.type === 'tool_call' && call.call.name).toBe('search_catalog')
+    expect(call && call.type === 'tool_call' && call.call.name).toBe('list_items')
 
     const result = events.find((e) => e.type === 'tool_result')
     expect(result && result.type === 'tool_result' && (result.result as { results: unknown[] }).results.length).toBe(1)
@@ -105,7 +107,7 @@ describe('generation timeout', () => {
     // Simulates a WASM worker that traps without ever rejecting the in-flight promise (observed
     // with wllama's multi-threaded backend): generate() never settles.
     const engine = { generate: () => new Promise<never>(() => {}) }
-    const tools = buildRegistry(referenceTools({ rag, cart: { add() {}, remove() {}, view: () => ({ cart: [], total: 0 }), clear() {} }, navigate: () => {} }))
+    const tools = buildRegistry(referenceTools({ list_items: (q) => rag.searchCatalog(q), get_item: (id) => rag.getItem!(id), search_knowledge: (q) => rag.searchKnowledge(q), add_to_cart() {}, remove_from_cart() {}, clear_cart() {}, checkout: () => ({ ok: true }), navigate: () => {} }))
     const session = createAgent({ engine, tools, systemPrompt: 'sys', generationTimeoutMs: 20 })
     const events: AgentEvent[] = []
     session.on((e) => events.push(e))
@@ -122,7 +124,7 @@ describe('abort', () => {
   it('cancels an in-flight turn between iterations', async () => {
     // an engine that always calls a tool → loops until aborted or maxIterations
     const engine = { async generate() { return { text: '', toolCalls: [{ name: 'search_catalog', args: { query: 'x' } }], raw: '' } } }
-    const tools = buildRegistry(referenceTools({ rag, cart: { add() {}, remove() {}, view: () => ({ cart: [], total: 0 }), clear() {} }, navigate: () => {} }))
+    const tools = buildRegistry(referenceTools({ list_items: (q) => rag.searchCatalog(q), get_item: (id) => rag.getItem!(id), search_knowledge: (q) => rag.searchKnowledge(q), add_to_cart() {}, remove_from_cart() {}, clear_cart() {}, checkout: () => ({ ok: true }), navigate: () => {} }))
     const session = createAgent({ engine, tools, systemPrompt: 'sys', maxIterations: 50 })
     const events: AgentEvent[] = []
     session.on((e) => events.push(e))

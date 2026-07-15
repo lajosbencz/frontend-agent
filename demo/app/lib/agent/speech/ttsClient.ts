@@ -1,10 +1,9 @@
-// In-browser text-to-speech via transformers.js / ONNX Runtime Web - the TTS mirror of
-// whisperClient.ts's STT. Browser SpeechSynthesis is unreliable cross-platform (notably silent on
-// Firefox/Linux without an OS speech backend configured), so replies are synthesized with a real
-// on-device model instead: same "nothing runs server-side, weights cached by the browser" story.
-// Dynamically imported so its weights/wasm never touch the main bundle.
+// In-browser text-to-speech via transformers.js / ONNX Runtime Web - the mirror of whisperClient's
+// STT. Browser SpeechSynthesis is unreliable cross-platform (notably silent on Firefox/Linux without
+// an OS speech backend), so replies are synthesized with an on-device model. Dynamically imported.
 
 import type { VoiceState } from '~/composables/useSpeechOutput'
+import { detectWebGPU } from './webgpu'
 
 // Lightweight single-speaker English VITS model - small download, no GPU required.
 const MODEL_ID = 'Xenova/mms-tts-eng'
@@ -17,16 +16,6 @@ type Synthesizer = (text: string) => Promise<SynthesisResult>
 
 let pipePromise: Promise<Synthesizer> | null = null
 let audioCtx: AudioContext | null = null
-
-async function detectWebGPU(): Promise<boolean> {
-  try {
-    const gpu = (navigator as unknown as { gpu?: { requestAdapter?: () => Promise<unknown> } }).gpu
-    if (!gpu?.requestAdapter) return false
-    return (await gpu.requestAdapter()) != null
-  } catch {
-    return false
-  }
-}
 
 async function getSynthesizer(state: VoiceState): Promise<Synthesizer> {
   if (pipePromise) return pipePromise
@@ -56,8 +45,7 @@ async function getSynthesizer(state: VoiceState): Promise<Synthesizer> {
 let activeSource: AudioBufferSourceNode | null = null
 let activeResolve: (() => void) | null = null
 
-/** Pause/resume suspend the whole AudioContext clock - simpler and more reliable than tracking a
- *  playback offset and rescheduling a new AudioBufferSourceNode (which can't be paused natively). */
+// Pause/resume suspend the whole AudioContext clock - an AudioBufferSourceNode can't be paused.
 export function pause(): void {
   void audioCtx?.suspend()
 }
@@ -66,8 +54,8 @@ export function resume(): void {
   void audioCtx?.resume()
 }
 
-/** Stop the current utterance, if any. Resolves its `speak()` call immediately - doesn't wait on
- *  the node's `ended` event, which may never fire while the context is suspended (paused). */
+// Stop the current utterance and resolve its speak() immediately - the node's `ended` event may
+// never fire while the context is suspended (paused).
 export function stop(): void {
   if (!activeSource) return
   const source = activeSource
@@ -78,10 +66,9 @@ export function stop(): void {
   try {
     source.stop()
   } catch {
-    /* already stopped/ended */
+    /* already stopped */
   }
   resolveDone?.()
-  // Don't leave the context suspended for the next utterance if we stopped mid-pause.
   void audioCtx?.resume()
 }
 
@@ -106,9 +93,7 @@ function playAudio(audio: Float32Array, samplingRate: number): Promise<void> {
   })
 }
 
-/** Synthesize and play `text`. Loads the model on first call (progress via `state`). Only one
- *  track ever plays at once - stops whatever's currently active first. Resolves early if `stop()`
- *  is called mid-utterance. */
+// Synthesize and play `text`; only one track plays at once, so stop whatever's active first.
 export async function speak(text: string, state: VoiceState): Promise<void> {
   stop()
   const synthesizer = await getSynthesizer(state)
@@ -116,9 +101,6 @@ export async function speak(text: string, state: VoiceState): Promise<void> {
   await playAudio(audio, sampling_rate)
 }
 
-/** Kick off model loading without speaking, so the first reply doesn't stall on a cold load. */
 export function preloadTTS(state: VoiceState): void {
-  void getSynthesizer(state).catch(() => {
-    /* surfaced when speak() is actually awaited */
-  })
+  void getSynthesizer(state).catch(() => {})
 }

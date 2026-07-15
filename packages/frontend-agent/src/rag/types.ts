@@ -24,15 +24,15 @@ export interface CatalogItemLite {
   in_stock: boolean
 }
 
-/**
- * A retrieval backend behind the `search_*` tools. The model is retriever-agnostic - any
- * implementation works as long as it returns the frozen result shapes above.
- */
+/** A retrieval backend behind the `search_*` tools. Any implementation works as long as it returns
+ *  the frozen result shapes above. */
 export interface RagBackend {
   searchCatalog(query: string, opts?: { maxPrice?: number; k?: number }): Promise<CatalogResult[]>
   searchKnowledge(query: string, k?: number): Promise<KnowledgeResult[]>
   /** A bounded `Title [id]; ...` hint for the system prompt (optional). */
   hint?(n?: number): Promise<string> | string
+  /** A representative page of on-screen catalog items for the injected VIEW (optional). */
+  representativeItems?(n?: number): Promise<CatalogItemLite[]> | CatalogItemLite[]
   /** Resolve a catalog item by id, for cart actions (optional). */
   getItem?(id: string): Promise<CatalogItemLite | null> | CatalogItemLite | null
 }
@@ -45,7 +45,6 @@ export interface CatalogItem {
   price: number | null
   in_stock: boolean
   summary: string
-  text?: string
 }
 export interface KnowledgeItem {
   id: string

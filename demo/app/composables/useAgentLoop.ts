@@ -1,10 +1,8 @@
 import { useAgentStore } from '~/stores/agent'
 import { domainSessions, type DomainKey } from '~/lib/agent/domains'
 
-// Thin Vue wrapper over the library Session. The Session owns the model-format history, the tool
-// loop, and the GBNF/id-grounding; here we just feed user text in and let its event stream update
-// the store (wired in each domain module). `submit(text)` is the single entry point - typed input
-// and STT both call it.
+// Thin wrapper over the library Session (which owns history, the tool loop, and GBNF/id-grounding):
+// feed user text in via send(); its event stream updates the store, wired per domain.
 
 export function useAgentLoop(domain: DomainKey) {
   const agent = useAgentStore(domain)
@@ -16,7 +14,6 @@ export function useAgentLoop(domain: DomainKey) {
     await s.submit(userText)
   }
 
-  /** Stop the in-flight turn. */
   async function stop() {
     const s = await session.getSession()
     s.abort()

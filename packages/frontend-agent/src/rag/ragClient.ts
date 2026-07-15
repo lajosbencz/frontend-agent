@@ -1,14 +1,9 @@
 import type { CatalogResult, KnowledgeResult, RagBackend } from './types'
 
-/**
- * Bring-your-own retrieval backend. Speaks a single contract to your search service, then normalizes
- * to the frozen model-facing shape - so the model can't tell which backend answered:
- *
- *   POST {endpoint}  { index: "catalog"|"knowledge", query, filters, top_k }
- *                 -> { results: [{ id, title, text, score, meta }] }
- *
- * Point `endpoint` at your Qdrant/pgvector/Elastic/Typesense adapter.
- */
+// BYO retrieval backend, normalized to the frozen model-facing shape. Point `endpoint` at your
+// adapter: POST { index: "catalog"|"knowledge", query, filters, top_k } -> { results: [...] }.
+const pickSnippet = (r: RemoteRow): string => r.snippet ?? r.text ?? ''
+
 export function createRagClient(endpoint: string, init?: RequestInit): RagBackend {
   async function remote(
     index: 'catalog' | 'knowledge',
@@ -34,7 +29,7 @@ export function createRagClient(endpoint: string, init?: RequestInit): RagBacken
       return (await remote('catalog', query, filters, k)).map((r) => ({
         id: r.id,
         title: r.title,
-        snippet: r.snippet ?? r.text ?? '',
+        snippet: pickSnippet(r),
         price: r.price ?? r.meta?.price ?? null,
         in_stock: r.in_stock ?? r.meta?.in_stock ?? true,
         attrs: r.attrs ?? r.meta ?? {},
@@ -45,7 +40,7 @@ export function createRagClient(endpoint: string, init?: RequestInit): RagBacken
       return (await remote('knowledge', query, {}, k)).map((r) => ({
         id: r.id,
         title: r.title,
-        snippet: r.snippet ?? r.text ?? '',
+        snippet: pickSnippet(r),
         score: r.score ?? 0,
       }))
     },

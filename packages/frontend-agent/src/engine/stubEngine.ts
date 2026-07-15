@@ -1,11 +1,8 @@
 import { renderToolCalls } from '../parsing/renderToolCalls'
 import type { AgentEngine, ChatMessage, EngineGenerateResult } from './types'
 
-/**
- * Fixture engine with no model weights - for building/testing the loop, tools, and UI without
- * loading the real model. Emits calls on the current v1.0.0 contract (`search_catalog`,
- * `search_knowledge`, `add_to_cart(id)`). Ignores the grammar.
- */
+/** Fixture engine with no model weights, for testing the loop/tools/UI. Emits calls on the frozen
+ *  roster (`list_items`, `search_knowledge`, `add_to_cart`). Ignores the grammar. */
 export class StubEngine implements AgentEngine {
   async generate(messages: ChatMessage[], _grammar?: string): Promise<EngineGenerateResult> {
     void _grammar
@@ -33,7 +30,7 @@ export class StubEngine implements AgentEngine {
       return call('search_knowledge', { query: userText.slice(0, 60) })
     }
     if (/(find|search|show|any|looking|need|grinder|machine|accessor)/.test(userText)) {
-      return call('search_catalog', { query: userText.slice(0, 60) })
+      return call('list_items', { query: userText.slice(0, 60) })
     }
 
     const text =

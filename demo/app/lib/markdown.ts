@@ -1,8 +1,6 @@
-// Chat-bubble Markdown rendering via `marked` (inline-only - no block wrapping, fits a compact
-// bubble). marked passes raw HTML through verbatim by default, so escaping `<` first neutralizes
-// that (no literal `<` left for its tokenizer to recognize a tag); marked's own entity-aware text
-// escaper already treats `&lt;` as a pre-existing entity and won't double-escape the `&`. The href
-// scheme filter afterward is defense in depth against anything smuggled through as a link target.
+// Inline-only chat-bubble Markdown via `marked`. Escape `<` first so marked's default raw-HTML
+// passthrough has no tag to recognize (its entity-aware escaper won't double-escape `&lt;`); the
+// href scheme filter afterward is defense-in-depth against smuggled link targets.
 
 import { marked } from 'marked'
 

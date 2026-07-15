@@ -34,14 +34,13 @@ const backend = useBackend()
 const input = ref('')
 const inputEl = ref<HTMLInputElement | null>(null)
 
-onMounted(() => inputEl.value?.focus())
-
 function close() {
   if (!props.closable) return
   agent.panelOpen = false
 }
 
 onMounted(() => {
+  inputEl.value?.focus()
   const onKey = (e: KeyboardEvent) => {
     if (props.closable && e.key === 'Escape' && agent.panelOpen) close()
   }
@@ -54,7 +53,7 @@ function toggleBackend() {
   runtime.switchBackend(backend.backend.value === 'webgpu' ? 'cpu' : 'webgpu')
 }
 
-// Speak newly-arrived assistant replies when the TTS preference is on.
+// Speak newly-arrived assistant replies when TTS is on.
 watch(
   () => agent.transcript.length,
   () => {
@@ -75,6 +74,26 @@ function stop() {
   agentLoop.stop()
 }
 
+// Abort must fully settle before the engine is torn down: it only takes effect between generation
+// steps, and tearing down wllama mid-generate would crash it. Capped so a slow turn can't wedge it.
+async function beforeModelSwitch() {
+  if (agent.status !== 'thinking') return
+  await agentLoop.stop()
+  await new Promise<void>((resolve) => {
+    let done = false
+    const finish = () => {
+      if (done) return
+      done = true
+      stopWatch()
+      clearTimeout(timer)
+      resolve()
+    }
+    const timer = setTimeout(finish, 10000)
+    const stopWatch = watch(() => agent.status, (s) => { if (s !== 'thinking') finish() })
+    if (agent.status !== 'thinking') finish()
+  })
+}
+
 // Optional voice layer: toggle records, then transcribes on the second tap. A completed
 // transcript drives the agent through the same submit() path (auto-send), so speaking is
 // equivalent to typing + Enter. Errors surface in the status line, never throw.
@@ -92,9 +111,12 @@ async function toggleMic() {
     <div class="flex items-center gap-3 border-b border-surface-4 px-[18px] py-[15px]">
       <span class="h-2 w-2 flex-none rounded-pill bg-accent" />
       <span class="text-[13px] text-text">{{ title }}</span>
+      <ClientOnly>
+        <AgentModelSwitchPill class="ml-auto" :before-switch="beforeModelSwitch" />
+      </ClientOnly>
       <button
         v-if="backend.backend.value"
-        class="ml-auto inline-flex items-center gap-1 font-mono text-[10px] font-medium text-text-faint"
+        class="inline-flex items-center gap-1 font-mono text-[10px] font-medium text-text-faint"
         :class="backend.webgpuAvailable.value
           ? 'cursor-pointer rounded-pill border border-border bg-surface-3 px-2 py-[3px] hover:border-border-hover hover:text-text-2'
           : 'border-none bg-transparent p-0'"
@@ -109,7 +131,7 @@ async function toggleMic() {
           v-if="speech.supported"
           class="flex-none cursor-pointer rounded-pill border px-2 py-[3px] font-mono text-[10px] font-medium transition-colors"
           :class="[
-            backend.backend.value ? 'ml-2' : 'ml-auto',
+            'ml-2',
             speech.enabled.value
               ? 'border-accent bg-accent text-white [[data-theme=dark]_&]:text-bg'
               : 'border-border bg-surface-3 text-text-faint hover:border-border-hover hover:text-text-2',
@@ -123,7 +145,7 @@ async function toggleMic() {
           v-if="voice.supported"
           class="flex-none cursor-pointer rounded-pill border px-2 py-[3px] font-mono text-[10px] font-medium transition-colors"
           :class="[
-            !speech.supported && !backend.backend.value ? 'ml-auto' : 'ml-2',
+            'ml-2',
             voice.enabled.value
               ? 'border-accent bg-accent text-white [[data-theme=dark]_&]:text-bg'
               : 'border-border bg-surface-3 text-text-faint hover:border-border-hover hover:text-text-2',
