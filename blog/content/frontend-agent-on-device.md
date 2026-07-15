@@ -1,15 +1,19 @@
 ---
-title: "Running an LLM agent entirely in your browser"
+title: Running an LLM agent entirely in your browser
 id: 4152767
-description: "A tiny LFM2.5 fine-tune that drives a storefront entirely in-browser with tool calls and RAG - trained on interaction patterns, not domain facts"
-date: "2026-07-15"
+description: 'A tiny LFM2.5 fine-tune that drives a storefront entirely in-browser with tool calls and RAG - trained on interaction patterns, not domain facts'
+date: '2026-07-15'
 slug: frontend-agent-on-device
-tags: [ai, localllm, webdev, machinelearning]
+tags:
+  - ai
+  - localllm
+  - webdev
+  - machinelearning
 published: false
-canonical_url: https://lajosbencz.github.io/frontend-agent/blog/frontend-agent-on-device/
+canonical_url: 'https://lajosbencz.github.io/frontend-agent/blog/frontend-agent-on-device/'
 draft: false
 ogImage: /assets/frontend-agent-vendor.png
-cover_image: https://lajosbencz.github.io/frontend-agent/blog/assets/frontend-agent-vendor.png
+cover_image: 'https://lajosbencz.github.io/frontend-agent/blog/assets/frontend-agent-vendor.png'
 ---
 
 **TL;DR**: I fine-tuned LiquidAI's LFM2.5 (230M and 350M) into a generic front-end agent that runs *entirely in the browser* - no server, no API key, no cloud costs.
