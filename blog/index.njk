@@ -6,7 +6,7 @@ permalink: /
 {%- for post in collections.posts %}
 <li>
   <a href="{{ post.url | url }}">{{ post.data.title }}</a>
-  {%- if post.date %} <span class="meta">{{ post.date | isodate }}</span>{% endif %}
+  {%- if post.data.postDate %} <span class="meta">{{ post.data.postDate | isodate }}</span>{% endif %}
   <p>{{ post.data.description }}</p>
 </li>
 {%- else %}

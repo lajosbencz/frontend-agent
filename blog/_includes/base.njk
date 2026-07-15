@@ -25,8 +25,8 @@
 {%- else %}
 <article>
 <h1>{{ title }}</h1>
-{%- if date %}
-<p class="meta"><time datetime="{{ date | isodate }}">{{ date | isodate }}</time></p>
+{%- if postDate %}
+<p class="meta"><time datetime="{{ postDate | isodate }}">{{ postDate | isodate }}</time></p>
 {%- endif %}
 {{ content | safe }}
 </article>
