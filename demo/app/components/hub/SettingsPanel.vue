@@ -53,6 +53,10 @@ const preloadLabel = computed(() => {
   return preload.cached.value ? 'Preload model (cached)' : 'Preload model'
 })
 
+const subparWarning = computed(
+  () => preload.hardware.value?.subpar === true && preload.status.value !== 'ready',
+)
+
 const menuOpen = ref(false)
 const menuRoot = ref<HTMLElement | null>(null)
 const menuDisabled = computed(() => !preload.cached.value && preload.status.value !== 'ready')
@@ -141,6 +145,15 @@ async function onModelSwitched() {
           <UiModelSelectButton @switched="onModelSwitched" />
           <template #fallback><div class="h-[52px]" /></template>
         </ClientOnly>
+
+        <p
+          v-if="subparWarning"
+          class="rounded-md border border-amber-500/40 bg-amber-500/10 px-2.5 py-1.5 text-[10.5px] leading-[1.5] text-amber-700 dark:text-amber-400"
+          role="status"
+        >
+          ⚠ This device looks slow for on-device AI (no GPU acceleration and limited CPU speed). It'll
+          still work, but replies will be slow.
+        </p>
 
         <div ref="menuRoot" class="relative flex">
           <button

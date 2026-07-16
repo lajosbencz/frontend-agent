@@ -1,3 +1,4 @@
+import { probeHardware, MIN_GFLOPS, type HardwareProbe } from 'frontend-agent/core'
 import {
   getEngine,
   resetEngine,
@@ -16,7 +17,39 @@ const status = ref<PreloadStatus>('idle')
 const cached = ref<boolean | null>(null)
 const progress = ref<{ bytesLoaded: number; bytesTotal: number } | null>(null)
 const errorMessage = ref<string | null>(null)
+const hardware = ref<HardwareProbe | null>(null)
 let checked = false
+
+const HW_KEY = 'fa:hw-probe'
+const HW_SCHEMA = 1
+
+function readCachedHardware(): HardwareProbe | null {
+  try {
+    const raw = localStorage.getItem(HW_KEY)
+    if (!raw) return null
+    const o = JSON.parse(raw)
+    if (o?.v !== HW_SCHEMA || typeof o.gflops !== 'number') return null
+    return {
+      gflops: o.gflops,
+      cores: typeof o.cores === 'number' ? o.cores : 0,
+      webgpu: !!o.webgpu,
+      subpar: !o.webgpu && o.gflops < MIN_GFLOPS,
+    }
+  } catch {
+    return null
+  }
+}
+
+function writeCachedHardware(p: HardwareProbe): void {
+  try {
+    localStorage.setItem(
+      HW_KEY,
+      JSON.stringify({ v: HW_SCHEMA, gflops: p.gflops, cores: p.cores, webgpu: p.webgpu }),
+    )
+  } catch {
+    /* private mode / quota - just re-probe next time */
+  }
+}
 
 export function useModelPreload() {
   async function checkCached() {
@@ -26,6 +59,18 @@ export function useModelPreload() {
       cached.value = await isModelCached()
     } catch {
       cached.value = null
+    }
+    const cachedHw = readCachedHardware()
+    if (cachedHw) {
+      hardware.value = cachedHw
+    } else {
+      try {
+        const probed = await probeHardware()
+        hardware.value = probed
+        if (probed.gflops != null) writeCachedHardware(probed)
+      } catch {
+        hardware.value = null
+      }
     }
   }
 
@@ -93,7 +138,7 @@ export function useModelPreload() {
   }
 
   return {
-    status, cached, progress, errorMessage,
+    status, cached, progress, errorMessage, hardware,
     checkCached, preload, unload, clearCache, clearAllCaches, syncToSelection,
   }
 }

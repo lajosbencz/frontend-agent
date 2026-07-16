@@ -14,6 +14,9 @@ export type { Session, AgentConfig, AgentEvent, ToolCall, SubmitOptions } from '
 export { StubEngine, makeStubEngine } from './engine/stubEngine'
 export type { AgentEngine, ChatMessage, EngineGenerateResult } from './engine/types'
 
+export { probeHardware, MIN_GFLOPS } from './engine/hardwareProbe'
+export type { HardwareProbe } from './engine/hardwareProbe'
+
 export { buildToolGrammar, collectIds } from './engine/gbnf'
 
 export { buildSystemPrompt } from './prompt/systemPrompt'

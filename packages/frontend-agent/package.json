@@ -53,6 +53,7 @@
     }
   },
   "scripts": {
+    "build:wasm": "node scripts/build-wasm.mjs",
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -66,10 +67,15 @@
     "stemmer": ">=2.0.0"
   },
   "peerDependenciesMeta": {
-    "minisearch": { "optional": true },
-    "stemmer": { "optional": true }
+    "minisearch": {
+      "optional": true
+    },
+    "stemmer": {
+      "optional": true
+    }
   },
   "devDependencies": {
+    "assemblyscript": "^0.28.19",
     "minisearch": "^7.2.0",
     "stemmer": "^2.0.1",
     "tsup": "^8.5.1",
