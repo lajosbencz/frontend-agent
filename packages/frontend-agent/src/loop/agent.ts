@@ -28,8 +28,10 @@ export interface AgentConfig {
   maxIterations?: number
   /** Arg keys constrained to grounded ids by the grammar. Default `['id']`. */
   idKeys?: string[]
-  /** Extra groundable ids beyond tool-result ids - typically the CURRENT VIEW's ids, since bounded
-   *  add/remove targets live in the view, not search results. Returned fresh each turn. */
+  /** Any ids the model may reference that won't appear in tool results - e.g. items already on screen
+   *  (a shop's CURRENT VIEW), whose ids the model must be allowed to emit even though no tool returned
+   *  them this turn. Folded into the grammar's id-grounding alongside tool-result ids, fresh per turn.
+   *  Generic: not shop- or cart-specific. */
   groundingIds?: () => string[]
   /** History token budget (system prompt excluded). Default derived from N_CTX. */
   historyBudgetTokens?: number

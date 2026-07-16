@@ -5,7 +5,7 @@ import {
   modelOptionForRef,
   type ModelOption,
   type HFModelRef,
-} from 'frontend-agent'
+} from 'frontend-agent/wllama'
 import { resetEngine, setModelOverride } from '~/lib/agent/engine'
 import { useModelPreload } from '~/composables/useModelPreload'
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MODEL_SIZES, MODEL_QUANTS, modelOptionAt, DEFAULT_MODEL_ID } from 'frontend-agent'
+import { MODEL_SIZES, MODEL_QUANTS, modelOptionAt, DEFAULT_MODEL_ID } from 'frontend-agent/wllama'
 import { useModelSwitcher } from '~/composables/useModelSwitcher'
 
 // Shared pick surface: size x quant matrix + HF-git-tag version selector, in a modal. Uses the

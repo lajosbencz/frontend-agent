@@ -1,4 +1,4 @@
-import { createFrontendAgent, type Session } from 'frontend-agent'
+import { createFrontendAgent, type Session } from 'frontend-agent/core'
 import type { FrontendAgentTools } from 'frontend-agent/reference'
 import { LocalMiniSearchRAG } from 'frontend-agent/rag'
 import { useAgentStore } from '~/stores/agent'

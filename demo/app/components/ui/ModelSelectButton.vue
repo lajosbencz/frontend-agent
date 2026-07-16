@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { shortQuant } from 'frontend-agent'
+import { shortQuant } from 'frontend-agent/wllama'
 import { useModelSwitcher } from '~/composables/useModelSwitcher'
 
 // Split read-only button [params | quant | version | v] opening the size x quant matrix modal.

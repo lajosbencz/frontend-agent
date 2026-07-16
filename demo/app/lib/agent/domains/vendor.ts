@@ -3,7 +3,7 @@
 // to route); `checkout` finalizes the sale and drives the mock transaction modal. The shelf-1
 // refusal is context injection in the persona, not a tool.
 
-import { createFrontendAgent } from 'frontend-agent'
+import { createFrontendAgent } from 'frontend-agent/core'
 import { useVendorStore } from '~/stores/vendor'
 import { groceries } from '~/data/vendor-groceries'
 import { getEngine } from '../engine'

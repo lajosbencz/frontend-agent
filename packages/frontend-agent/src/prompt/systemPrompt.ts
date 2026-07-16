@@ -13,7 +13,12 @@ export interface SystemPromptConfig {
 }
 
 /** Reproduce the trained system message: `{persona}\n\n{hintLabel}: {hint}\nList of tools: [...]`,
- *  tool list rendered with `pyJson` for train/inference parity. Pass NO `tools` array to the engine. */
+ *  tool list rendered with `pyJson` for train/inference parity. Pass NO `tools` array to the engine.
+ *
+ *  The `List of tools: [...]` literal and the pyJson rendering are LFM2.5 chat-template parity (they
+ *  match how the base model was trained to receive tool schemas) - not an arbitrary wrapper. Change
+ *  them only if you retrain with a different convention. `persona` here is the full C block (persona
+ *  + injected context), and `hintLabel` is the one freely-configurable label. */
 export async function buildSystemPrompt(cfg: SystemPromptConfig): Promise<string> {
   const label = cfg.hintLabel ?? 'Example catalog items'
   const hint =

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { shortQuant } from 'frontend-agent'
+import { shortQuant } from 'frontend-agent/wllama'
 import { useModelSwitcher } from '~/composables/useModelSwitcher'
 
 // Compact chat-header pill opening the shared matrix modal. `beforeSwitch` aborts any in-flight turn

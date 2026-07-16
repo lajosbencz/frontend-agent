@@ -2,7 +2,9 @@
 // cheap to re-wire with a different tool registry/persona per domain.
 
 import wllamaWasmUrl from '@wllama/wllama/esm/wasm/wllama.wasm?url'
-import { CacheManager } from '@wllama/wllama'
+// Prebuilt ESM entry, not the bare package root (its package.json main points at a nonexistent root
+// index.js; only raw index.ts ships there). Keeps the demo off untranspiled TS - same rule the lib follows.
+import { CacheManager } from '@wllama/wllama/esm/index.js'
 import {
   WllamaEngine,
   resolveModelUrl,
@@ -10,7 +12,7 @@ import {
   fetchModelMeta,
   type EngineStatus,
   type HFModelRef,
-} from 'frontend-agent'
+} from 'frontend-agent/wllama'
 
 export interface EngineCallbacks {
   onStatus?: (status: EngineStatus) => void

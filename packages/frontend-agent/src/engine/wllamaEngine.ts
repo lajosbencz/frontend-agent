@@ -1,4 +1,4 @@
-import { Wllama, type AssetsPathConfig } from '@wllama/wllama'
+import { Wllama, type AssetsPathConfig } from '@wllama/wllama/esm/index.js'
 import { parseToolCalls } from '../parsing/toolCallParser'
 import { renderToolCalls } from '../parsing/renderToolCalls'
 import { N_CTX, MAX_OUTPUT_TOKENS, SYSTEM_CTX_WARN_FRACTION, estimateTokens } from '../limits'
