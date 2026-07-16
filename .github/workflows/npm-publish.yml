@@ -24,6 +24,7 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: npm install -g npm@latest
       - run: npm ci
+      - run: npm run build:wasm -w frontend-agent -- --check
       - run: npm test -w frontend-agent
       - run: npm run build -w frontend-agent
       - name: Verify tag matches package.json version
